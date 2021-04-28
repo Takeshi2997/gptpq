@@ -13,28 +13,28 @@ function main()
 end
 
 function imaginary(dirname::String)
-
+    # Imaginary roop
     for it in 1:Const.iT
         # Initialize Physical Value
-        energyS = 0f0im
-        energyB = 0f0im
-        energyI = 0f0im
-        energy  = 0f0im
-        numberB = 0f0
+        eS = zeros(Complex{Float32}, Const.batchsize)
+        eB = zeros(Complex{Float32}, Const.batchsize)
+        eI = zeros(Complex{Float32}, Const.batchsize)
+        e  = zeros(Complex{Float32}, Const.batchsize)
+        nB = zeros(Float32, Const.batchsize)
         @threads for n in 1:Const.batchsize
-            sampling(energyS, energyB, energyI, energy, numberB)
+            eS[n], eB[n], eI[n], e[n], nB[n] = sampling()
         end
-        energyS  = real(energyS) / Const.iters / Const.batchsize
-        energyB  = real(energyB) / Const.iters / Const.batchsize
-        energyI  = real(energyI) / Const.iters / Const.batchsize
-        energy   = real(energy)  / Const.iters / Const.batchsize
-        numberB /= Const.iters / Const.batchsize
+        energyS  = real(sum(eS)) / Const.iters / Const.batchsize
+        energyB  = real(sum(eB)) / Const.iters / Const.batchsize
+        energyI  = real(sum(eI)) / Const.iters / Const.batchsize
+        energy   = real(sum(e))  / Const.iters / Const.batchsize
+        numberB  = sum(nB) / Const.iters / Const.batchsize
        
         # Write Data
-        filename = dirnameerror * "/physical_quantity" * lpad(it, 3, "0") * ".txt"
+        filename = dirname * "/physical_quantity" * lpad(it, 3, "0") * ".txt"
         touch(filename)
         open(filename, "a") do io
-            write(io, string(n))
+            write(io, string(it))
             write(io, "\t")
             write(io, string(energy / (Const.dimB + Const.dimS)))
             write(io, "\t")
@@ -50,7 +50,12 @@ function imaginary(dirname::String)
     end 
 end
 
-function sampling(energyS::Complex, energyB::Complex, energyI::Complex, energy::Complex, numberB::Real)
+function sampling()
+    energyS = 0f0im
+    energyB = 0f0im
+    energyI = 0f0im
+    energy  = 0f0im
+    numberB = 0f0
     # Metropolice sampling
     xs = [rand([1f0, -1f0], Const.dimB+Const.dimS) for i in 1:Const.init]
     mu = zeros(Float32, Const.init)
@@ -71,6 +76,7 @@ function sampling(energyS::Complex, energyB::Complex, energyI::Complex, energy::
         energy  += eS + eB + eI
         numberB += nB
     end
+    return energyS, energyB, energyI, energy, numberB
 end
 
 function mh(trace::Func.GPcore.Trace)
