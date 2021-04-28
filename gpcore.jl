@@ -7,21 +7,14 @@ mutable struct Trace{T <: AbstractArray, S <: Complex}
     ys::Vector{S}
 end
 
-mutable struct CovMatrix{S <: AbstractArray}
-    K::S
-    invK::S
-end
-
-covmatrix = CovMatrix([1f0 0f0; 0f0 1f0], [1f0 0f0; 0f0 1f0])
-
 function model(trace::Trace, x::Vector{Float32})
     xs, ys = trace.xs, trace.ys
 
     # Compute covariance matrix
-    covar(xs)
+    K = covar(xs)
 
     # Compute mu var
-    realmu, imagmu, var = statcalc(xs, ys, x)
+    realmu, imagmu, var = statcalc(xs, ys, x, K)
 
     # sample from gaussian
     y = rand(Normal(realmu, var)) + im * rand(Normal(imagmu, var))
@@ -40,10 +33,10 @@ function covar(xs::Vector{Vector{Float32}})
             K[i, j] = kernel(x, y)
         end
     end
-    setfield!(covmatrix, :K, K)
+    return K
 end
 
-function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::Vector{Float32})
+function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::Vector{Float32}, K::Array)
     kv = [kernel(xs[i], x) for i in 1:length(xs)]
     k0 = kernel(x, x)
     realy = real.(ys)

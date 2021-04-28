@@ -4,7 +4,7 @@ BASE        = functions.jl setup.jl gpcore.jl
 OBJS        = main.jl
 CALC        = calculation.jl
 
-main: $(BASE) $(CORE) $(OBJS) $(CALC)
+main: $(BASE) $(CORE) $(OBJS)
 	$(JL) $(OPTS) $(OBJS)
 
 calc: $(BASE) $(CORE) $(CALC)

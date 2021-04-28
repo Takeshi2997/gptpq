@@ -21,7 +21,7 @@ function imaginary(dirname::String)
         energyI = 0f0im
         energy  = 0f0im
         numberB = 0f0
-        @thread for n in 1:Const.batchsize
+        @threads for n in 1:Const.batchsize
             sampling(energyS, energyB, energyI, energy, numberB)
         end
         energyS  = real(energyS) / Const.iters / Const.batchsize
