@@ -43,12 +43,9 @@ function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::
     imagy = imag.(ys)
     
     # Calculate inverse K
-    K, invK  = covmatrix.K, covmatrix.invK
     U, Δ, V = svd(K)
     invΔ = Diagonal(1f0 ./ Δ .* (Δ .> 1f-6))
     invK = V * invΔ * U'
-    setfield!(covmatrix, :K, K)
-    setfield!(covmatrix, :invK, invK)
  
     realmu = kv' * invK * realy
     imagmu = kv' * invK * imagy
