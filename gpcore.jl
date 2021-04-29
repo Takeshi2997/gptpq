@@ -45,9 +45,8 @@ function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::
     invΔ = Diagonal(1f0 ./ Δ .* (Δ .> 1f-6))
     invK = V * invΔ * U'
  
-    realmu = cpu(kv' * invK * realy)
-    imagmu = cpu(kv' * invK * imagy)
-    Σ = cpu(kv' * invK * kv)
+    realmu = kv' * invK * realy
+    imagmu = kv' * invK * imagy
     var = abs(k0 - kv' * invK * kv)
     return  realmu, imagmu, var
 end
