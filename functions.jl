@@ -17,6 +17,11 @@ function Flip()
 end
 const a = Flip()
 
+function reduction(trace::GPcore.Trace)
+    xs, ys = trace.xs, trace.ys
+    trace = GPcore.Trace(@views xs[end-10:end], @views ys[end-10:end])
+end
+
 function update(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
     x = xs[end]
@@ -37,6 +42,10 @@ function update(trace::GPcore.Trace)
         append!(xs, [x])
         append!(ys, [y])
         trace = GPcore.Trace(xs, ys)
+        # Reduction
+        if ix > 24
+            reduction(trace)
+        end
         x = xs[end]
         y = ys[end]
     end
@@ -78,6 +87,9 @@ function energyB(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     out = 0f0im
     for iy in 1:Const.dimB
         out += hamiltonianB(x, y, trace, iy)
+        if length(trace.ys) > 24
+            reduction(trace)
+        end
     end
     return out
 end

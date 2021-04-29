@@ -1,6 +1,6 @@
 module GPcore
 include("./setup.jl")
-using .Const, Random, LinearAlgebra, Distributions, Base.Threads, CUDA
+using .Const, Random, LinearAlgebra, Distributions, Base.Threads
 
 mutable struct Trace{T <: AbstractArray, S <: Complex}
     xs::Vector{T}
@@ -34,11 +34,11 @@ function covar(xs::Vector{Vector{Float32}})
 end
 
 function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::Vector{Float32})
-    K  = CuArray(covar(xs))
-    kv = CuArray([kernel(xs[i], x) for i in 1:length(xs)])
+    K  = covar(xs)
+    kv = [kernel(xs[i], x) for i in 1:length(xs)]
     k0 = kernel(x, x)
-    realy = CuArray(real.(ys))
-    imagy = CuArray(imag.(ys))
+    realy = real.(ys)
+    imagy = imag.(ys)
     
     # Calculate inverse K
     U, Δ, V = svd(K)
