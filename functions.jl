@@ -25,14 +25,20 @@ function update(trace::GPcore.Trace)
     rng = MersenneTwister(1234)
     randomnum = rand(rng, Float32, n)
     for ix in 1:n
-        xflip = x
+        xflip = copy(x)
         xflip[ix] *= -1f0
         yflip = GPcore.model(trace, xflip)
         prob  = abs2(yflip / y)
-        (x, y) = ifelse(randomnum[ix] < prob, (xflip, yflip), (x, y))
+        a = x[ix]
+        if randomnum[ix] < prob
+            x = xflip
+            y = yflip
+        end
         append!(xs, [x])
         append!(ys, [y])
         trace = GPcore.Trace(xs, ys)
+        x = xs[end]
+        y = ys[end]
     end
 end
 

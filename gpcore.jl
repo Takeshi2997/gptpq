@@ -1,6 +1,6 @@
 module GPcore
 include("./setup.jl")
-using .Const, Random, LinearAlgebra, Distributions, Base.Threads
+using .Const, Random, LinearAlgebra, Distributions, Base.Threads, CUDA
 
 mutable struct Trace{T <: AbstractArray, S <: Complex}
     xs::Vector{T}
@@ -10,11 +10,8 @@ end
 function model(trace::Trace, x::Vector{Float32})
     xs, ys = trace.xs, trace.ys
 
-    # Compute covariance matrix
-    K = covar(xs)
-
     # Compute mu var
-    realmu, imagmu, var = statcalc(xs, ys, x, K)
+    realmu, imagmu, var = statcalc(xs, ys, x)
 
     # sample from gaussian
     y = rand(Normal(realmu, var)) + im * rand(Normal(imagmu, var))
@@ -36,19 +33,21 @@ function covar(xs::Vector{Vector{Float32}})
     return K
 end
 
-function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::Vector{Float32}, K::Array)
-    kv = [kernel(xs[i], x) for i in 1:length(xs)]
+function statcalc(xs::Vector{Vector{Float32}}, ys::Vector{Complex{Float32}}, x::Vector{Float32})
+    K  = CuArray(covar(xs))
+    kv = CuArray([kernel(xs[i], x) for i in 1:length(xs)])
     k0 = kernel(x, x)
-    realy = real.(ys)
-    imagy = imag.(ys)
+    realy = CuArray(real.(ys))
+    imagy = CuArray(imag.(ys))
     
     # Calculate inverse K
     U, Δ, V = svd(K)
     invΔ = Diagonal(1f0 ./ Δ .* (Δ .> 1f-6))
     invK = V * invΔ * U'
  
-    realmu = kv' * invK * realy
-    imagmu = kv' * invK * imagy
+    realmu = cpu(kv' * invK * realy)
+    imagmu = cpu(kv' * invK * imagy)
+    Σ = cpu(kv' * invK * kv)
     var = abs(k0 - kv' * invK * kv)
     return  realmu, imagmu, var
 end
