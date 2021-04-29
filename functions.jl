@@ -91,19 +91,24 @@ function energyI(x::Vector{Float32})
     return out
 end
 
-function energy(x::Vector{Float32}, y::Complex{Float32})
-
-    # Initialize trace
-    xs = [rand([1f0, -1f0], Const.dimB+Const.dimS) for i in 1:Const.init]
-    mu = zeros(Float32, Const.init)
-    K  = GPcore.covar(xs)
-    ys = rand(MvNormal(mu, K)) .+ im .* rand(MvNormal(mu, K))
-    trace = Func.GPcore.Trace(xs, ys)
-
+function energy(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     eS = energyS(x, y, trace)
     eB = energyB(x, y, trace)
     eI = energyI(x)
     return eS, eB, eI
+end
+
+function imaginary_evolution(trace::GPcore.Trace)
+    xs, ys = trace.xs, trace.ys
+    ys′ = Vector{Float32}(undef, Const.init)
+    for n in length(xs)-Const.init():length(xs)
+        x = xs[n]
+        y = ys[n]
+        eS, eB, eI = energy(x, y)
+        ys′[n] = (Const.l - (eS + eB + eI)) * y
+    end 
+    outtrace = GPcore.Trace(xs, ys′)
+    return outtrace
 end
 
 end
