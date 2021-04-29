@@ -48,15 +48,17 @@ function imaginary(dirname::String, filename1::String, filename2::String)
             write(io, "\n")
         end
 
-        # Calculate inverse Temperature
-        β = LegendreTF.calc_temperature(energyB / Const.dimB)
+        if energyB / Const.dimB < 0.1f0
+            # Calculate inverse Temperature
+            β = LegendreTF.calc_temperature(energyB / Const.dimB)
 
-        # Write Energy-Temperature
-        open(filename2, "a") do io
-            write(io, string(β))
-            write(io, "\t")
-            write(io, string(energyS / Const.dimS))
-            write(io, "\n")
+            # Write Energy-Temperature
+            open(filename2, "a") do io
+                write(io, string(β))
+                write(io, "\t")
+                write(io, string(energyS / Const.dimS))
+                write(io, "\n")
+            end
         end
 
         # Trace Update!
