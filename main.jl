@@ -22,6 +22,10 @@ function imaginary(dirname::String)
         traces[n] = Func.GPcore.Trace(xs, ys)
     end
 
+    # Make Data File
+    filename = dirname * "/physical_quantity.txt"
+    touch(filename)
+ 
     # Imaginary roop
     for it in 1:Const.iT
         # Initialize Physical Value
@@ -40,8 +44,6 @@ function imaginary(dirname::String)
         numberB  = sum(nB) / Const.iters / Const.batchsize
        
         # Write Data
-        filename = dirname * "/physical_quantity" * lpad(it, 3, "0") * ".txt"
-        touch(filename)
         open(filename, "a") do io
             write(io, string(it))
             write(io, "\t")
