@@ -101,7 +101,7 @@ end
 function imaginary_evolution(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
     ys′ = Vector{Float32}(undef, Const.init)
-    for n in length(xs)-Const.init():length(xs)
+    for n in length(xs)-Const.init+1:length(xs)
         x = xs[n]
         y = ys[n]
         eS, eB, eI = energy(x, y)
