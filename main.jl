@@ -74,7 +74,7 @@ function sampling(trace::Func.GPcore.Trace)
     xs, ys = mh(trace)
     
     # Calculate Physical Value
-    for n in 1:length(calcxs)
+    for n in 1:length(xs)
         x = xs[n]
         y = ys[n]
         eS, eB, eI = Func.energy(x, y, traceinit)
