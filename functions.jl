@@ -17,11 +17,6 @@ function Flip()
 end
 const a = Flip()
 
-function reduction(trace::GPcore.Trace)
-    xs, ys = trace.xs, trace.ys
-    trace = GPcore.Trace(@views xs[end-10:end], @views ys[end-10:end])
-end
-
 function update(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
     x = xs[end]
@@ -39,16 +34,8 @@ function update(trace::GPcore.Trace)
             x = xflip
             y = yflip
         end
-        append!(xs, [x])
-        append!(ys, [y])
-        trace = GPcore.Trace(xs, ys)
-        # Reduction
-        if ix > 24
-            reduction(trace)
-        end
-        x = xs[end]
-        y = ys[end]
     end
+    return x, y
 end
 
 function hamiltonianS(x::Vector{Float32}, y::Complex{Float32}, 
@@ -87,9 +74,6 @@ function energyB(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     out = 0f0im
     for iy in 1:Const.dimB
         out += hamiltonianB(x, y, trace, iy)
-        if length(trace.ys) > 24
-            reduction(trace)
-        end
     end
     return out
 end
@@ -110,6 +94,9 @@ function energyI(x::Vector{Float32})
 end
 
 function energy(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
+    eS = 0f0im
+    eB = 0f0im
+    eI = 0f0im
     eS = energyS(x, y, trace)
     eB = energyB(x, y, trace)
     eI = energyI(x)
@@ -118,13 +105,12 @@ end
 
 function imaginary_evolution(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
-    traceinit = GPcore.Trace(xs[1:Const.init], ys[1:Const.init])
-    xs′ = xs[end-Const.init+1:end]
-    ys′ = Vector{Complex{Float32}}(undef, Const.init)
+    xs′ = copy(xs)
+    ys′ = copy(ys)
     for n in 1:Const.init
-        x = xs[end-Const.init+n]
-        y = ys[end-Const.init+n]
-        eS, eB, eI = energy(x, y, traceinit)
+        x = xs[n]
+        y = ys[n]
+        eS, eB, eI = energy(x, y, trace)
         ys′[n] = (Const.l - (eS + eB + eI) / (Const.dimB + Const.dimS)) * y
     end 
     outtrace = GPcore.Trace(xs′, ys′)
