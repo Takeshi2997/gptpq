@@ -58,7 +58,7 @@ function imaginary(dirname::String)
         end
 
         for n in 1:Const.batchsize
-            traces[n] = Func.imaginary_evolution(trace)
+            traces[n] = Func.imaginary_evolution(traces[n])
         end
     end 
 end
