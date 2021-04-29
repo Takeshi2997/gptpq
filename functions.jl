@@ -100,11 +100,12 @@ end
 
 function imaginary_evolution(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
+    traceinit = GPcore.Trace(xs[1:Const.init], ys[1:Const.init])
     ys′ = Vector{Float32}(undef, Const.init)
     for n in length(xs)-Const.init+1:length(xs)
         x = xs[n]
         y = ys[n]
-        eS, eB, eI = energy(x, y)
+        eS, eB, eI = energy(x, y, traceinit)
         ys′[n] = (Const.l - (eS + eB + eI)) * y
     end 
     outtrace = GPcore.Trace(xs, ys′)

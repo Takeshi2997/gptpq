@@ -71,17 +71,12 @@ function sampling(trace::Func.GPcore.Trace)
     energy  = 0f0im
     numberB = 0f0
     # Metropolice sampling
-    xs = [rand([1f0, -1f0], Const.dimB+Const.dimS) for i in 1:Const.init]
-    mu = zeros(Float32, Const.init)
-    K  = Func.GPcore.covar(xs)
-    ys = rand(MvNormal(mu, K)) .+ im .* rand(MvNormal(mu, K))
-    trace   = Func.GPcore.Trace(xs, ys)
-    calcxs, calcys = mh(trace)
+    xs, ys = mh(trace)
     
     # Calculate Physical Value
     for n in 1:length(calcxs)
-        x = calcxs[n]
-        y = calcys[n]
+        x = xs[n]
+        y = ys[n]
         eS, eB, eI = Func.energy(x, y, traceinit)
         nB = sum(@views x[1:Const.dimB])
         energyS += eS
