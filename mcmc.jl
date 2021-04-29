@@ -4,7 +4,7 @@ include("./functions.jl")
 include("./legendreTF.jl")
 using .Const, .Func, .LegendreTF, Distributions, Base.Threads
 
-function imaginary(dirname::String, filename1::String, filename::String)
+function imaginary(dirname::String, filename1::String, filename2::String)
     # Initialize Traces
     traces = Vector{Func.GPcore.Trace}(undef, Const.batchsize)
     for n in 1:Const.batchsize
@@ -53,10 +53,10 @@ function imaginary(dirname::String, filename1::String, filename::String)
 
         # Write Energy-Temperature
         open(filename2, "a") do io
-            write(f, string(β))
-            write(f, "\t")
-            write(f, string(energyS / Const.dimS))
-            write(f, "\n")
+            write(io, string(β))
+            write(io, "\t")
+            write(io, string(energyS / Const.dimS))
+            write(io, "\n")
         end
 
         # Trace Update!

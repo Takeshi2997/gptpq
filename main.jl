@@ -15,7 +15,7 @@ function main()
     touch(filename2)
  
     # Imaginary time development
-    MCMC.imaginary(dirnam, filename1, filename2)
+    MCMC.imaginary(dirname, filename1, filename2)
 end
 
 main()
