@@ -93,7 +93,7 @@ function mh(trace::Func.GPcore.Trace)
     outys = Vector{Complex{Float32}}(undef, Const.iters)
     for i in 1:Const.iters
         Func.update(trace)
-        xs, ys = trace.xs[end-Const.init:end], trace.ys[end-Const.init:end]
+        xs, ys = trace.xs[end-Const.init+1:end], trace.ys[end-Const.init+1:end]
         outxs[i] = xs[end]
         outys[i] = ys[end]
         trace = Func.GPcore.Trace(xs, ys)

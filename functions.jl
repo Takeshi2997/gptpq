@@ -101,7 +101,7 @@ end
 function imaginary_evolution(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
     traceinit = GPcore.Trace(xs[1:Const.init], ys[1:Const.init])
-    xs′ = xs[end-Const.init:end]
+    xs′ = xs[end-Const.init+1:end]
     ys′ = Vector{Complex{Float32}}(undef, Const.init)
     for n in 1:Const.init
         x = xs[end-Const.init+n]
