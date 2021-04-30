@@ -92,7 +92,7 @@ function energyI(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     out = 0f0im
     for iy in 1:Const.dimI
         ix = Const.dimB + iy
-        out += hamiltonianI(x, trace, ix, iy)
+        out += hamiltonianI(x, y, trace, ix, iy)
     end
     return out
 end
