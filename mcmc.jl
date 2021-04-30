@@ -96,6 +96,9 @@ end
 function mh(trace::Func.GPcore.Trace)
     outxs = Vector{Vector{Float32}}(undef, Const.iters)
     outys = Vector{Complex{Float32}}(undef, Const.iters)
+    for i in 1:Const.burnintime
+        xs, ys = Func.update(trace)
+    end
     for i in 1:Const.iters
         xs, ys = Func.update(trace)
         outxs[i] = xs

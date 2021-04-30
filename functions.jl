@@ -80,20 +80,20 @@ end
 
 function hamiltonianI(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace, ix::Integer, iy::Integer)
     out = 0f0im
-    if x[ix] != x[iy]
-        yflip = GPcore.model(trace, a.flip[iy] * a.flip[ix] * x)
-        out  += yflip / y
-    end
+    out = -x[ix] * x[iy]
+#    if x[ix] != x[iy]
+#        yflip = GPcore.model(trace, a.flip[iy] * a.flip[ix] * x)
+#        out  += yflip / y
+#    end
     return Const.λ * out / 2f0
 end
 
 function energyI(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     out = 0f0im
-    out = -x[ix] * x[iy]
-#    for iy in 1:Const.dimI
-#        ix = Const.dimB + iy
-#        out += hamiltonianI(x, trace, ix, iy)
-#    end
+    for iy in 1:Const.dimI
+        ix = Const.dimB + iy
+        out += hamiltonianI(x, trace, ix, iy)
+    end
     return out
 end
 
