@@ -48,7 +48,7 @@ function imaginary(dirname::String, filename1::String, filename2::String)
             write(io, "\n")
         end
 
-        if energyB / Const.dimB < 0.1f0
+        if energyB / Const.dimB < -0.1f0
             # Calculate inverse Temperature
             β = LegendreTF.calc_temperature(energyB / Const.dimB)
 

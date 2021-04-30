@@ -78,7 +78,7 @@ function energyB(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     return out
 end
 
-function hamiltonianI(x::Vector{Float32}, y::Complex{Float32}, ix::Integer, iy::Integer)
+function hamiltonianI(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace, ix::Integer, iy::Integer)
     out = 0f0im
     if x[ix] != x[iy]
         yflip = GPcore.model(trace, a.flip[iy] * a.flip[ix] * x)
@@ -87,12 +87,13 @@ function hamiltonianI(x::Vector{Float32}, y::Complex{Float32}, ix::Integer, iy::
     return Const.λ * out / 2f0
 end
 
-function energyI(x::Vector{Float32})
+function energyI(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     out = 0f0im
-    for iy in 1:Const.dimI
-        ix = Const.dimB + iy
-        out += hamiltonianI(x, ix, iy)
-    end
+    out = -x[ix] * x[iy]
+#    for iy in 1:Const.dimI
+#        ix = Const.dimB + iy
+#        out += hamiltonianI(x, trace, ix, iy)
+#    end
     return out
 end
 
@@ -102,7 +103,7 @@ function energy(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
     eI = 0f0im
     eS = energyS(x, y, trace)
     eB = energyB(x, y, trace)
-    eI = energyI(x)
+    eI = energyI(x, y, trace)
     return eS, eB, eI
 end
 
