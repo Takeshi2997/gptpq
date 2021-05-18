@@ -4,7 +4,7 @@ include("./functions.jl")
 include("./legendreTF.jl")
 using .Const, .Func, .LegendreTF, Distributions, Base.Threads, LinearAlgebra
 
-function imaginary(dirname::String, filename1::String, λ::T) where {T <: Real}
+function imaginary(dirname::String,filename1::String, filename2::String, λ::T) where {T <: Real}
     # Initialize Traces
     traces = Vector{Func.GPcore.Trace}(undef, Const.batchsize)
     for n in 1:Const.batchsize
@@ -54,6 +54,18 @@ function imaginary(dirname::String, filename1::String, λ::T) where {T <: Real}
             write(io, "\t")
             write(io, string(numberB / Const.dimB))
             write(io, "\n")
+        end
+
+        if energyB / Const.dimB < -0.05f0
+            # Calculate inverse Temperature
+            β = LegendreTF.calc_temperature(energyB / Const.dimB)
+            # Write Energy-Temperature
+            open(filename2, "a") do io
+                write(io, string(β))
+                write(io, "\t")
+                write(io, string(energyS / Const.dimS))
+                write(io, "\n")
+            end
         end
 
         # Trace Update!

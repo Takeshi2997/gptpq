@@ -8,13 +8,13 @@ const dimI = 4
 # System Param
 const t = 1f0
 const J = 1f0
-const l = 0.1f0
+const l = 0.6f0
 
 # Repeat Number
 const init  = 32
 const burnintime = 10
-const iters = 100
-const iT    = 500
+const iters = 200
+const iT    = 100
 const batchsize = 16
 
 # Hyper Param
