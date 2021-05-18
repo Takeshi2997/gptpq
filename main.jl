@@ -8,14 +8,14 @@ function main()
     rm(dirname, force=true, recursive=true)
     mkdir(dirname)
 
-    # Make Data File
-    filename1 = dirname * "/physical_quantity.txt"
-    touch(filename1)
-    filename2 = dirname * "/energy_temperature.txt"
-    touch(filename2)
- 
     # Imaginary time development
-    MCMC.imaginary(dirname, filename1, filename2)
+    for iλ in 1:500
+        λ = iλ * 0.001f0
+        # Make Data File
+        filename = dirname * "/data" * lpad(iλ, 3, "0") * ".txt"
+        touch(filename)
+        MCMC.imaginary(dirname, filename, 0.1f0)
+    end
 end
 
 main()
