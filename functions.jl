@@ -77,19 +77,18 @@ end
 
 function hamiltonianI(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace, ix::Integer, iy::Integer) where {T <: Real}
     out = 0f0im
-    out = -x[ix] * x[iy]
-#    if x[ix] != x[iy]
-#        yflip = GPcore.model(trace, a.flip[iy] * a.flip[ix] * x)
-#        out  += yflip / y
-#    end
+#    out = -x[ix] * x[iy]
+    yflip = GPcore.model(trace, a.flip[iy] * a.flip[ix] * x)
+    out  += yflip / y
     return out / 2f0
 end
 
 function energyI(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace, λ::T) where {T <: Real}
     out = 0f0im
     for iy in 1:Const.dimI
-        ix = Const.dimB + iy
-        out += hamiltonianI(x, y, trace, ix, iy)
+        for ix in Const.dimB+1:Const.dimB+Const.dimI
+            out += hamiltonianI(x, y, trace, ix, iy)
+        end
     end
     return λ * out
 end

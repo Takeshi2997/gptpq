@@ -3,7 +3,7 @@ module Const
 # System Size
 const dimS = 24
 const dimB = 120
-const dimI = 4
+const dimI = 8
 
 # System Param
 const t = 1f0
@@ -13,7 +13,7 @@ const l = 0.6f0
 # Repeat Number
 const init  = 32
 const burnintime = 10
-const iters = 200
+const iters = 1000
 const iT    = 100
 const batchsize = 16
 
