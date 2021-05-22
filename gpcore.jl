@@ -16,14 +16,14 @@ function model(trace::Trace, x::Vector{T}) where {T <: Real}
     y = var * randn(Complex{Float32}) + mu
 end
 
-function kernel(x::Vector{T}, y::Vector{T}) where {T <: Real}
-    r = norm(x - y) / 2f0 / (Const.dimB + Const.dimS)
+function kernel(x::Vector{Float32}, y::Vector{Float32})
+    r = norm(x - y) / 2f0 / Const.dim
     Const.θ₁ * exp(-2f0 * π * r^2 / Const.θ₂)
 end
 
-function covar(xs::Vector{Vector{T}}) where {T <: Real}
+function covar(xs::Vector{Vector{Float32}})
     n = length(xs)
-    K = zeros(Complex{T}, n, n)
+    K = zeros(Complex{Float32}, n, n)
     for j in 1:n
         y = xs[j]
         for i in 1:n

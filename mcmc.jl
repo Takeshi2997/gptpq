@@ -4,11 +4,11 @@ include("./functions.jl")
 include("./legendreTF.jl")
 using .Const, .Func, .LegendreTF, Distributions, Base.Threads, LinearAlgebra
 
-function imaginary(dirname::String,filename1::String, filename2::String, λ::T) where {T <: Real}
+function imaginary(dirname::String,filename1::String, filename2::String)
     # Initialize Traces
     traces = Vector{Func.GPcore.Trace}(undef, Const.batchsize)
     for n in 1:Const.batchsize
-        xs = [rand([1f0, -1f0], Const.dimS+Const.dimB) for i in 1:Const.init]
+        xs = [rand([1f0, -1f0], Const.dim) for i in 1:Const.init]
         bimu = zeros(Float32, 2 * Const.init)
         K  = Func.GPcore.covar(xs)
         biK1 = vcat(real.(K)/2f0,  imag.(K)/2f0)
@@ -26,39 +26,31 @@ function imaginary(dirname::String,filename1::String, filename2::String, λ::T) 
     # Imaginary roop
     for it in 1:Const.iT
         # Initialize Physical Value
-        eS = zeros(Complex{T}, Const.batchsize)
-        eB = zeros(Complex{T}, Const.batchsize)
-        eI = zeros(Complex{T}, Const.batchsize)
-        e  = zeros(Complex{T}, Const.batchsize)
-        nB = zeros(T, Const.batchsize)
+        eS = zeros(Complex{Float32}, Const.batchsize)
+        e  = zeros(Complex{Float32}, Const.batchsize)
+        nA = zeros(Float32, Const.batchsize)
         @threads for n in 1:Const.batchsize
-            eS[n], eB[n], eI[n], e[n], nB[n] = sampling(traces[n], λ)
+            eS[n], e[n], nA[n] = sampling(traces[n])
         end
-        energyS  = real(sum(eS)) / Const.iters / Const.batchsize
-        energyB  = real(sum(eB)) / Const.iters / Const.batchsize
-        energyI  = real(sum(eI)) / Const.iters / Const.batchsize
-        energy   = real(sum(e))  / Const.iters / Const.batchsize
-        numberB  = sum(nB) / Const.iters / Const.batchsize
+        energyS = real(sum(eS)) / Const.iters / Const.batchsize
+        energy  = real(sum(e))  / Const.iters / Const.batchsize
+        number  = sum(nA) / Const.iters / Const.batchsize
 
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))
             write(io, "\t")
-            write(io, string(energy / (Const.dimB + Const.dimS)))
+            write(io, string(energy / Const.dim))
             write(io, "\t")
             write(io, string(energyS / Const.dimS))
             write(io, "\t")
-            write(io, string(energyB / Const.dimB))
-            write(io, "\t")
-            write(io, string(energyI / Const.dimS))
-            write(io, "\t")
-            write(io, string(numberB / Const.dimB))
+            write(io, string(number / Const.dim))
             write(io, "\n")
         end
 
-        if energyB / Const.dimB < -0.05f0
+        if energy / Const.dim < -0.025f0
             # Calculate inverse Temperature
-            β = LegendreTF.calc_temperature(energyB / Const.dimB)
+            β = LegendreTF.calc_temperature(energy / Const.dim)
             # Write Energy-Temperature
             open(filename2, "a") do io
                 write(io, string(β))
@@ -70,35 +62,31 @@ function imaginary(dirname::String,filename1::String, filename2::String, λ::T) 
 
         # Trace Update!
         for n in 1:Const.batchsize
-            traces[n] = Func.imaginary_evolution(traces[n], λ)
+            traces[n] = Func.imaginary_evolution(traces[n])
         end
     end 
 end
 
-function sampling(trace::Func.GPcore.Trace, λ::T) where {T <: Real}
+function sampling(trace::Func.GPcore.Trace)
     energyS = 0f0im
-    energyB = 0f0im
-    energyI = 0f0im
     energy  = 0f0im
-    numberB = 0f0
+    number  = 0f0
     # Metropolice sampling
-    xs = Vector{Vector{T}}(undef, Const.iters)
-    ys = Vector{Complex{T}}(undef, Const.iters)
+    xs = Vector{Vector{Float32}}(undef, Const.iters)
+    ys = Vector{Complex{Float32}}(undef, Const.iters)
     mh(trace, xs, ys)
     
     # Calculate Physical Value
     for n in 1:length(xs)
         x = xs[n]
         y = ys[n]
-        eS, eB, eI = Func.energy(x, y, trace, λ)
-        nB = sum(@views x[1:Const.dimB])
+        eS, e = Func.energy(x, y, trace)
+        n = sum(x)
         energyS += eS
-        energyB += eB
-        energyI += eI
-        energy  += eS + eB + eI
-        numberB += nB
+        energy  += e
+        number  += n
     end
-    return energyS, energyB, energyI, energy, numberB
+    return energyS, energy, number
 end
 
 function mh(trace::Func.GPcore.Trace, xs::Vector{Vector{T}}, ys::Vector{Complex{T}}) where {T <: Real}
