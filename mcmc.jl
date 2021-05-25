@@ -15,26 +15,37 @@ function imaginary(dirname::String, filename1::String)
         traces[n] = Func.GPcore.makedata(xs, ys)
     end
 
+    venergy0 = Const.l^2
+    energy0  = 0f0
     # Imaginary roop
     for it in 1:Const.iT
         # Initialize Physical Value
-        e = zeros(Complex{Float32}, Const.batchsize)
-        h = zeros(Float32, Const.batchsize)
+        e  = zeros(Complex{Float32}, Const.batchsize)
+        ve = zeros(Complex{Float32}, Const.batchsize)
+        h  = zeros(Float32, Const.batchsize)
         @threads for n in 1:Const.batchsize
-            e[n], h[n] = sampling(traces[n])
+            e[n], ve[n], h[n] = sampling(traces[n])
         end
-        energy = real(sum(e)) / Const.iters / Const.batchsize
-        magnet = sum(h) / Const.iters / Const.batchsize
+        energy  = real(sum(e))  / Const.iters / Const.batchsize
+        venergy = real(sum(ve)) / Const.iters / Const.batchsize
+        magnet  = sum(h) / Const.iters / Const.batchsize
 
+        β = (log(venergy0) - 2f0 * it * log(Const.l - energy) + 
+             2f0 * (it - 1) * log(Const.l - energy0)) / Const.dim
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))
+            write(io, "\t")
+            write(io, string(β))
             write(io, "\t")
             write(io, string(energy / Const.dim))
             write(io, "\t")
             write(io, string(magnet / Const.dim))
             write(io, "\n")
         end
+        
+        energy0  = copy(energy)
+        venergy0 = copy(venergy)
 
         # Trace Update!
         for n in 1:Const.batchsize
@@ -51,7 +62,8 @@ function imaginary(dirname::String, filename1::String)
 end
 
 function sampling(trace::Func.GPcore.Trace)
-    energy = 0f0im
+    energy  = 0f0im
+    venergy = 0f0im
     magnet = 0f0
     # Metropolice sampling
     xs, ys = mh(trace)
@@ -62,10 +74,11 @@ function sampling(trace::Func.GPcore.Trace)
         y = ys[n]
         e = Func.energy(x, y, trace)
         h = sum(@views x[1:Const.dim])
-        energy += e
-        magnet += h
+        energy  += e
+        venergy += (Const.l - e) * conj(Const.l - e)
+        magnet  += h
     end
-    return energy, magnet
+    return energy, venergy, magnet
 end
 
 function mh(trace::Func.GPcore.Trace)
