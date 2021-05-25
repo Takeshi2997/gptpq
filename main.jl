@@ -9,8 +9,8 @@ function main()
     mkdir(dirname)
 
     # Imaginary time development
-    for iλ in 1:500
-        λ = iλ * 0.001f0
+    for iλ in 1:10
+        λ = iλ * 0.1f0
         # Make Data File
         filename1 = dirname * "/data" * lpad(iλ, 3, "0") * ".txt"
         filename2 = dirname * "/energy_subsystem" * lpad(iλ, 3, "0") * ".txt"
