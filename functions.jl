@@ -21,14 +21,15 @@ function update(trace::GPcore.Trace)
     xs, ys = trace.xs, trace.ys
     x = xs[end]
     y = ys[end]
-    n = Const.dim
+    n = length(x)
     rng = MersenneTwister(1234)
     randomnum = rand(rng, Float32, n)
     for ix in 1:n
         xflip = copy(x)
         xflip[ix] *= -1f0
         yflip = GPcore.model(trace, xflip)
-        prob  = abs2(yflip / y)
+        prob  = exp(2f0 * real(yflip - y))
+        a = x[ix]
         if randomnum[ix] < prob
             x = xflip
             y = yflip
@@ -37,62 +38,102 @@ function update(trace::GPcore.Trace)
     return x, y
 end
 
-function hamiltonianS(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace, ix::Integer) where {T <: Real}
+function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32}, ix::Integer)
     out = 0f0im
-    ixnext = ix + 1
+    ixnext = ix%Const.dim + 1
     if x[ix] != x[ixnext]
-        yflip = GPcore.model(trace, a.flip[ixnext] * a.flip[ix] * x)
-        out  += yflip / y
+        yflip = GPcore.func(a.flip[ixnext] * a.flip[ix] * x)
+        out  += 2f0 * exp(yflip - y) - 1f0
+    else
+        out += 1f0
     end
-    return -Const.t * out / 4f0
+    return -Const.J * out / 4f0
 end
 
-function energyS(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace) where {T <: Real}
+function energy_heisenberg(x::Vector{Float32}, y::Complex{Float32})
     out = 0f0im
-    for ix in 1:Const.dimS-1
-        out += hamiltonianS(x, y, trace, ix)
+    for ix in 1:Const.dim
+        out += hamiltonian_heisenberg(x, y, ix)
     end
     return out
 end
 
-function hamiltonianB(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace, iy::Integer) where {T <: Real}
+
+function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32}, 
+                                trace::GPcore.Trace, ix::Integer)
+    out = 0f0im
+    ixnext = ix%Const.dim + 1
+    if x[ix] != x[ixnext]
+        yflip = GPcore.model(trace, a.flip[ixnext] * a.flip[ix] * x)
+        out  += 2f0 * exp(yflip - y) - 1f0
+    else
+        out += 1f0
+    end
+    return -Const.J * out / 4f0
+end
+
+function energy_heisenberg(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
+    out = 0f0im
+    for ix in 1:Const.dim
+        out += hamiltonian_heisenberg(x, y, trace, ix)
+    end
+    return out
+end
+
+function hamiltonian_ising(x::Vector{Float32}, y::Complex{Float32}, 
+                           trace::GPcore.Trace, iy::Integer)
+    out = 0f0im
+    iynext = iy%Const.dim + 1
+    yflip = GPcore.model(trace, a.flip[iynext] * x)
+    out  += x[iy] * x[iynext] / 4f0 + Const.h * exp(yflip - y) / 2f0
+    return -out
+end
+
+function energy_ising(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
+    out = 0f0im
+    for iy in 1:Const.dim
+        out += hamiltonian_ising(x, y, trace, iy)
+    end
+    return out
+end
+
+function hamiltonian_XY(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace, iy::Integer) where {T <: Real}
     out = 0f0im
     iynext = iy%Const.dim + 1
     if x[iy] != x[iynext]
         yflip = GPcore.model(trace, a.flip[iynext] * a.flip[iy] * x)
-        out  += yflip / y
+        out  += exp(yflip - y)
     end
     return -Const.t * out
 end
 
-function energyB(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace) where {T <: Real}
+function energy_XY(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace) where {T <: Real}
     out = 0f0im
     for iy in 1:Const.dim
-        out += hamiltonianB(x, y, trace, iy)
+        out += hamiltonian_XY(x, y, trace, iy)
     end
     return out
 end
 
-function energy(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace) where {T <: Real}
-    eS = 0f0im
-    e  = 0f0im
-    eS = energyS(x, y, trace)
-    e  = energyB(x, y, trace)
-    return eS, e
+function energy(x::Vector{Float32}, y::Complex{Float32}, trace::GPcore.Trace)
+    e = 0f0im
+#    e = energy_ising(x, y, trace)
+#    e = energy_heisenberg(x, y, trace)
+    e = energy_XY(x, y, trace)
+    return e
 end
 
 function imaginary_evolution(trace::GPcore.Trace)
-    xs, ys, invK = trace.xs, trace.ys, trace.invK
+    xs, ys = trace.xs, trace.ys
     xs′ = copy(xs)
     ys′ = copy(ys)
     for n in 1:Const.init
         x = xs[n]
         y = ys[n]
-        e = energyB(x, y, trace)
-        ys′[n] = (Const.l - e / Const.dim) * y
+        e = energy(x, y, trace)
+        ys′[n] = log((Const.l - e / Const.dim) * exp(y))
     end 
-    outtrace = GPcore.Trace(xs′, ys′, invK)
-    return outtrace
+    GPcore.makedata(ys′)
 end
 
 end
