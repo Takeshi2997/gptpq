@@ -25,13 +25,10 @@ function imaginary(dirname::String, filename1::String)
         end
         energy = real(sum(e)) / Const.iters / Const.batchsize
         magnet = sum(h) / Const.iters / Const.batchsize
-        β = 2f0 * it / Const.dim / (Const.l - energy / Const.dim)
 
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))
-            write(io, "\t")
-            write(io, string(β))
             write(io, "\t")
             write(io, string(energy / Const.dim))
             write(io, "\t")
