@@ -30,17 +30,18 @@ function imaginary(dirname::String, filename1::String)
         venergy = real(sum(ve)) / Const.iters / Const.batchsize
         magnet  = sum(h) / Const.iters / Const.batchsize
 
-        β = (log(venergy0) - 2f0 * it * log(Const.l - energy) + 
-             2f0 * (it - 1) * log(Const.l - energy0)) / Const.dim
+        Δs = (log(venergy0) - 2f0 * it * log(Const.l - energy) + 
+              2f0 * (it - 1) * log(Const.l - energy0)) / Const.dim
+        β = Δs / (energy - energy0 + 1f-6)
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))
             write(io, "\t")
             write(io, string(β))
             write(io, "\t")
-            write(io, string(energy / Const.dim))
+            write(io, string(energy))
             write(io, "\t")
-            write(io, string(magnet / Const.dim))
+            write(io, string(magnet))
             write(io, "\n")
         end
         
@@ -72,8 +73,8 @@ function sampling(trace::Func.GPcore.Trace)
     for n in 1:length(xs)
         x = xs[n]
         y = ys[n]
-        e = Func.energy(x, y, trace)
-        h = sum(@views x[1:Const.dim])
+        e = Func.energy(x, y, trace) / Const.dim
+        h = sum(@views x[1:Const.dim]) / Const.dim
         energy  += e
         venergy += (Const.l - e) * conj(Const.l - e)
         magnet  += h

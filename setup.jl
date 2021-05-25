@@ -7,14 +7,14 @@ const dim = 80
 const h = 1f0
 const J = -1f0
 const t = 1f0
-const l = 0.4f0
+const l = 0.6f0
 
 # Repeat Number
 const init = 1024
 const auxn = 32
 const burnintime = 10
 const iters = 1000
-const iT    = 500
+const iT    = 100
 const batchsize = 16
 
 # Hyper Param
