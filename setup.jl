@@ -7,7 +7,7 @@ const dim = 80
 const h = 1f0
 const J = -1f0
 const t = 1f0
-const l = 0.4
+const l = 0.4f0
 
 # Repeat Number
 const init = 1024
