@@ -133,7 +133,7 @@ function imaginary_evolution(trace::GPcore.Trace)
         e = energy(x, y, trace)
         ys′[n] = log((Const.l - e / Const.dim) * exp(y))
     end 
-    GPcore.makedata(ys′)
+    GPcore.makedata(xs, ys′)
 end
 
 end
