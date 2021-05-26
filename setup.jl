@@ -15,7 +15,7 @@ const auxn = 32
 const burnintime = 10
 const iters = 1000
 const iT    = 100
-const batchsize = 16
+const batchsize = 80
 
 # Hyper Param
 const θ₁ = 1f0
