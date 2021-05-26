@@ -11,7 +11,7 @@ const l = 0.6f0
 
 # Repeat Number
 const init = 1024
-const auxn = 32
+const auxn = 64
 const burnintime = 10
 const iters = 1000
 const iT    = 100

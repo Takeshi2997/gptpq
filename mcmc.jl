@@ -15,6 +15,7 @@ function imaginary(dirname::String, filename1::String)
         traces[n] = Func.GPcore.makedata(xs, ys)
     end
 
+    venergy0 = Const.l^2
     # Imaginary roop
     for it in 1:Const.iT
         # Initialize Physical Value
@@ -27,8 +28,8 @@ function imaginary(dirname::String, filename1::String)
         energy  = real(sum(e))  / Const.iters / Const.batchsize
         venergy = real(sum(ve)) / Const.iters / Const.batchsize
         magnet  = sum(h) / Const.iters / Const.batchsize
-        entropy = (log(venergy) - 2f0 * log(Const.l - energy)) / Const.dim
 
+        entropy = log(venergy) / Const.dim - 2f0 * it / Const.dim * log(Const.l - energy)
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))
@@ -41,6 +42,7 @@ function imaginary(dirname::String, filename1::String)
             write(io, "\n")
         end
 
+        venergy0 += venergy
         # Trace Update!
         for n in 1:Const.batchsize
             traces[n] = Func.imaginary_evolution(traces[n])
