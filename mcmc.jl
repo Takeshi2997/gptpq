@@ -16,8 +16,6 @@ function imaginary(dirname::String, filename1::String)
     end
 
     # Imaginary roop
-    venergy0 = Const.l^2
-    energy0  = 0f0
     for it in 1:Const.iT
         # Initialize Physical Value
         e  = zeros(Complex{Float32}, Const.batchsize)
@@ -29,24 +27,19 @@ function imaginary(dirname::String, filename1::String)
         energy  = real(sum(e))  / Const.iters / Const.batchsize
         venergy = real(sum(ve)) / Const.iters / Const.batchsize
         magnet  = sum(h) / Const.iters / Const.batchsize
+        entropy = (log(venergy) - 2f0 * log(Const.l - energy)) / Const.dim
 
-        Δs = log(venergy0) / Const.dim + 
-        (2f0 * (it - 1) / Const.dim) * log(Const.l - energy0) - 
-        2f0 * it / Const.dim * log(Const.l - energy)
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))
             write(io, "\t")
             write(io, string(energy))
             write(io, "\t")
-            write(io, string(Δs))
+            write(io, string(entropy))
             write(io, "\t")
             write(io, string(magnet))
             write(io, "\n")
         end
-
-        energy0  = copy(energy)
-        venergy0 = copy(venergy)
 
         # Trace Update!
         for n in 1:Const.batchsize
