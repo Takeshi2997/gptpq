@@ -42,9 +42,10 @@ function model(trace::Trace, x::Vector{Float32})
     log.(var * randn(Complex{Float32}) + mu)
 end
 
+
 function kernel(x::Vector{Float32}, y::Vector{Float32})
     r = norm(x - y) / 2f0 / Const.dim
-    Const.θ₁ * exp(-2f0 * π * r^2 / Const.θ₂)
+    Const.θ₁ * exp(-r^2 / Const.θ₂)
 end
 
 function covar(xs::Vector{Vector{Float32}})

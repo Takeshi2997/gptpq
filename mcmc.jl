@@ -29,7 +29,7 @@ function imaginary(dirname::String, filename1::String)
         venergy = real(sum(ve)) / Const.iters / Const.batchsize
         magnet  = sum(h) / Const.iters / Const.batchsize
 
-        entropy = log(venergy) / Const.dim - 2f0 * it / Const.dim * log(Const.l - energy)
+        entropy = log(venergy0) / Const.dim - 2f0 * it / Const.dim * log(Const.l - energy)
         # Write Data
         open(filename1, "a") do io
             write(io, string(it))

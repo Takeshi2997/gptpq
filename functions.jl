@@ -63,7 +63,7 @@ function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32},
                                 trace::GPcore.Trace, ix::Integer)
     out = 0f0im
     ixnext = ix%Const.dim + 1
-    if x[ix] != x[ixnext]
+    if x[ix] * x[ixnext] < 0f0
         yflip = GPcore.model(trace, a.flip[ixnext] * a.flip[ix] * x)
         out  += 2f0 * exp(yflip - y) - 1f0
     else
@@ -100,7 +100,7 @@ end
 function hamiltonian_XY(x::Vector{T}, y::Complex{T}, trace::GPcore.Trace, iy::Integer) where {T <: Real}
     out = 0f0im
     iynext = iy%Const.dim + 1
-    if x[iy] != x[iynext]
+    if x[iy] * x[iynext] < 0f0
         yflip = GPcore.model(trace, a.flip[iynext] * a.flip[iy] * x)
         out  += exp(yflip - y)
     end
