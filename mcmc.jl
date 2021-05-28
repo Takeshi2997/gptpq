@@ -42,7 +42,7 @@ function imaginary(dirname::String, filename1::String)
             write(io, "\n")
         end
 
-        venergy0 += log(venergy)
+        logvenergy0 += log(venergy)
         # Trace Update!
         for n in 1:Const.batchsize
             traces[n] = Func.imaginary_evolution(traces[n])
