@@ -39,7 +39,7 @@ function model(trace::Trace, x::Vector{Float32})
     var = k0 - kv' * iΣ * kv
 
     # sample from gaussian
-    log.(var * randn(Complex{Float32}) + mu)
+    log.(sqrt(var) * randn(Complex{Float32}) + mu)
 end
 
 
