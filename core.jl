@@ -69,8 +69,8 @@ function measure()
 end
 
 function sampling(model::GPmodel)
-    energy  = 0f0im
-    venergy = 0f0im
+    E  = 0f0im
+    vE = 0f0im
     magnet = 0f0
     # Metropolice sampling
     xs, ys = mh(model)
@@ -81,11 +81,11 @@ function sampling(model::GPmodel)
         y = ys[n]
         e = energy(x, y, model) / c.N
         h = sum(@views x[1:c.N]) / c.N
-        energy  += e
-        venergy += (c.l - e) * conj(c.l - e)
+        E  += e
+        vE += (c.l - e) * conj(c.l - e)
         magnet  += h
     end
-    return energy, venergy, magnet
+    return E, vE, magnet
 end
 
 function mh(model::GPmodel)
