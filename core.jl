@@ -11,7 +11,7 @@ function it_evolution(models::Array{GPmodel})
         # Model Update!
         batchsize = length(models)
         outdata = Vector(undef, batchsize)
-        for n in 1:batchsize
+        @threads for n in 1:batchsize
             model = models[n]
             xs, ys = model.xs, model.ys
             ys′ = copy(ys)
