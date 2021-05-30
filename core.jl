@@ -24,8 +24,7 @@ function it_evolution(models::Array{GPmodel})
             models[n] = makemodel(xs, ys′)
             outdata[n] = (xs, ys′)
         end
-        touch("./data/" * filenames[it])
-        open(io -> serialize(io, outdata), "./data/" * filenames[it])
+        open(io -> serialize(io, outdata), "./data/" * filenames[it], "w")
     end
 end
 
