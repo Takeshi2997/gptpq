@@ -19,7 +19,7 @@ function it_evolution(models::Array{GPmodel})
                 x = xs[i]
                 y = ys[i]
                 e = energy(x, y, model)
-                ys′[i] = log((c.l - e / c.dim) * exp(y))
+                ys′[i] = log((c.l - e / c.N) * exp(y))
             end 
             model[n] = makemodel(xs, ys′)
             outdata[n] = (model[n].xs, model[n].ys)
@@ -80,7 +80,7 @@ function sampling(model::GPmodel)
         x = xs[n]
         y = ys[n]
         e = energy(x, y, model) / c.N
-        h = sum(@views x[1:c.dim]) / c.N
+        h = sum(@views x[1:c.N]) / c.N
         energy  += e
         venergy += (c.l - e) * conj(c.l - e)
         magnet  += h
