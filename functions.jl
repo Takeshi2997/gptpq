@@ -122,7 +122,7 @@ end
 function imaginary_evolution(model::GPmodel)
     xs, ys = model.xs, model.ys
     ys′ = copy(ys)
-    for n in 1:c.init
+    for n in 1:c.num
         x = xs[n]
         y = ys[n]
         e = energy(x, y, model)

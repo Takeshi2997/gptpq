@@ -15,7 +15,7 @@ function it_evolution(models::Array{GPmodel})
             model = models[n]
             xs, ys = model.xs, model.ys
             ys′ = copy(ys)
-            for i in 1:c.init
+            for i in 1:c.num
                 x = xs[i]
                 y = ys[i]
                 e = energy(x, y, trace)
@@ -40,7 +40,7 @@ function measure()
             models[n] = makemodel(xs, ys)
         end
 
-        # Initialize Physical Value
+        # numialize Physical Value
         e  = zeros(Complex{Float32}, c.batchsize)
         ve = zeros(Complex{Float32}, c.batchsize)
         h  = zeros(Float32, c.batchsize)
