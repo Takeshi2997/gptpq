@@ -38,4 +38,4 @@ function GP_Data()
     GP_Data(N, h, J, t, l, num, auxn, burnintime, iters, iT, batchsize, θ₁, θ₂)
 end
 
-c = GP_Data()
+const c = GP_Data()

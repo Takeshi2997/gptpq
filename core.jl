@@ -15,11 +15,11 @@ function it_evolution(models::Array{GPmodel})
             model = models[n]
             xs, ys = model.xs, model.ys
             ys′ = copy(ys)
-            for n in 1:c.init
-                x = xs[n]
-                y = ys[n]
+            for i in 1:c.init
+                x = xs[i]
+                y = ys[i]
                 e = energy(x, y, trace)
-                ys′[n] = log((c.l - e / c.dim) * exp(y))
+                ys′[i] = log((c.l - e / c.dim) * exp(y))
             end 
             model[n] = makemodel(xs, ys′)
             outdata[n] = (model[n].xs, model[n].ys)
