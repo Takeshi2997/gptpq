@@ -23,6 +23,6 @@ function main()
     it_evolution(models)
 
     # MCMC Sampling
-    mcmc()
+    measure()
 end
 end
