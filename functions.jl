@@ -1,3 +1,4 @@
+include("./setup.jl")
 include("./model.jl")
 using LinearAlgebra, Random
 

@@ -1,3 +1,4 @@
+include("./setup.jl")
 include("./functions.jl")
 include("./model.jl")
 using Distributions, Base.Threads, Serialization, LinearAlgebra
@@ -10,7 +11,7 @@ function it_evolution(models::Array{GPmodel})
         # Trace Update!
         batchsize = length(models)
         outdata = Vector(undef, batchsize)
-        @Threads for n in 1:batchsize
+        @threads for n in 1:batchsize
             model = models[n]
             xs, ys = model.xs, model.ys
             ys′ = copy(ys)

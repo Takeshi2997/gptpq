@@ -4,8 +4,6 @@ include("./core.jl")
 include("./model.jl")
 using Distributions, LinearAlgebra
 
-const c = GP_Data()
-
 function main()
     # Initialize Traces
     models = Array{GPmodel}(undef, c.batchsize)

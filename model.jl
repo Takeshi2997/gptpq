@@ -1,3 +1,4 @@
+include("./setup.jl")
 using LinearAlgebra
 
 mutable struct GPmodel{T<:AbstractArray, S<:Complex}
