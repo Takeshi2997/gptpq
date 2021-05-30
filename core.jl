@@ -25,7 +25,7 @@ function it_evolution(models::Array{GPmodel})
             outdata[n] = (xs, ys′)
         end
         touch("./data/" * filenames[it])
-        open(io -> serialize(io, out), "./data/" * filenames[it])
+        open(io -> serialize(io, outdata), "./data/" * filenames[it])
     end
 end
 
