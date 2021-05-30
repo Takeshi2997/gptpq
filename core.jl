@@ -3,7 +3,7 @@ include("./functions.jl")
 include("./model.jl")
 using Distributions, Base.Threads, Serialization, LinearAlgebra
 
-const filenames = ["gsdata" * lpad(it, 4, "0") * ".dat" for it in 1:c.iT]
+const filenames = ["gpdata" * lpad(it, 4, "0") * ".dat" for it in 1:c.iT]
 const filename  = "physicalvalue.txt"
 
 function it_evolution(models::Array{GPmodel})
@@ -24,6 +24,7 @@ function it_evolution(models::Array{GPmodel})
             models[n] = makemodel(xs, ys′)
             outdata[n] = (xs, ys′)
         end
+        touch("./data/" * filenames[it])
         open(io -> serialize(io, out), "./data/" * filenames[it])
     end
 end
