@@ -53,7 +53,7 @@ function measure()
         entropy = logvenergy0 / c.N - 2f0 * it / c.N * log(c.l - energy)
 
         # Write Data
-        open(filename, "a") do io
+        open("./data/" * filename, "a") do io
             write(io, string(it))
             write(io, "\t")
             write(io, string(energy))
