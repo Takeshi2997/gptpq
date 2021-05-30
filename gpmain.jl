@@ -5,6 +5,8 @@ include("./model.jl")
 using Distributions, LinearAlgebra
 
 function main()
+    mkdir("./data")
+
     # Initialize Traces
     models = Array{GPmodel}(undef, c.batchsize)
     for n in 1:c.batchsize
