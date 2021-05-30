@@ -8,7 +8,7 @@ const filename  = "physicalvalue.txt"
 
 function it_evolution(models::Array{GPmodel})
     for it in 1:c.iT
-        # Trace Update!
+        # Model Update!
         batchsize = length(models)
         outdata = Vector(undef, batchsize)
         @threads for n in 1:batchsize
@@ -18,7 +18,7 @@ function it_evolution(models::Array{GPmodel})
             for i in 1:c.num
                 x = xs[i]
                 y = ys[i]
-                e = energy(x, y, trace)
+                e = energy(x, y, model)
                 ys′[i] = log((c.l - e / c.dim) * exp(y))
             end 
             model[n] = makemodel(xs, ys′)
@@ -79,7 +79,7 @@ function sampling(model::GPmodel)
     for n in 1:length(xs)
         x = xs[n]
         y = ys[n]
-        e = energy(x, y, trace) / c.N
+        e = energy(x, y, model) / c.N
         h = sum(@views x[1:c.dim]) / c.N
         energy  += e
         venergy += (c.l - e) * conj(c.l - e)
