@@ -11,7 +11,7 @@ function it_evolution(models::Array{GPmodel})
         # Model Update!
         batchsize = length(models)
         outdata = Vector(undef, batchsize)
-        @threads for n in 1:batchsize
+        for n in 1:batchsize
             model = models[n]
             xs, ys = model.xs, model.ys
             ys′ = copy(ys)
@@ -29,7 +29,7 @@ function it_evolution(models::Array{GPmodel})
 end
 
 function measure()
-    touch(filename)
+    touch("./data/" * filename)
     logvenergy0 = 0f0
     # Imaginary roop
     for it in 1:c.iT

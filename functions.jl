@@ -24,7 +24,8 @@ function update(model::GPmodel)
     rng = MersenneTwister(1234)
     randomnum = rand(rng, Float32, n)
     for ix in 1:n
-        yflip = inference(model, a.flip[ix] * x)
+        xflip = a.flip[ix] * x
+        yflip = inference(model, xflip)
         prob  = exp(2f0 * real(yflip - y))
         if randomnum[ix] < prob
             x = xflip
