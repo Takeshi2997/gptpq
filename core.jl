@@ -3,28 +3,26 @@ include("./functions.jl")
 include("./model.jl")
 using Distributions, Base.Threads, Serialization, LinearAlgebra
 
-const filenames = ["gpdata" * lpad(it, 4, "0") * ".dat" for it in 1:c.iT]
+const filenames = ["gpdata" * lpad(it, 4, "0") * ".dat" for it in 0:c.iT]
 const filename  = "physicalvalue.txt"
 
-function it_evolution(models::Array{GPmodel})
+function it_evolution(model::GPmodel)
     for it in 1:c.iT
         # Model Update!
-        batchsize = length(models)
-        outdata = Vector(undef, batchsize)
-        @threads for n in 1:batchsize
-            model = models[n]
-            xs, ys = model.xs, model.ys
-            ys′ = copy(ys)
-            for i in 1:c.num
-                x = xs[i]
-                y = ys[i]
-                e = energy(x, y, model)
-                ys′[i] = log((c.l - e / c.N) * exp(y))
-            end 
-            models[n] = makemodel(xs, ys′)
-            outdata[n] = (xs, ys′)
+        xydata = open(deserialize, "./data/" * filenames[it])
+        xs, ys = model.xs, model.ys
+        ys′ = copy(ys)
+        for i in 1:c.num
+            x = xs[i]
+            y = ys[i]
+            e = energy(x, y, model)
+            ys′[i] = log((c.l - e / c.N) * exp(y))
         end
-        open(io -> serialize(io, outdata), "./data/" * filenames[it], "w")
+        model = makemodel(xs, ys′)
+        xs = [rand([1f0, -1f0], c.N) for i in 1:c.num]
+        ys = [inference(models[n], x) for x in xs]
+        outdata = (xs, ys)
+        open(io -> serialize(io, outdata), "./data/" * filenames[it+1], "w")
     end
 end
 
@@ -33,23 +31,15 @@ function measure()
     logvenergy0 = 0f0
     # Imaginary roop
     for it in 1:c.iT
-        xydata = open(deserialize, "./data/" * filenames[it])
-        models = Array{GPmodel}(undef, c.batchsize)
-        for n in 1:c.batchsize
-            xs, ys = xydata[n]
-            models[n] = makemodel(xs, ys)
-        end
+        xydata = open(deserialize, "./data/" * filenames[it+1])
+        xs, ys = xydata
+        model = makemodel(xs, ys)
 
         # numialize Physical Value
-        e  = zeros(Complex{Float32}, c.batchsize)
-        ve = zeros(Complex{Float32}, c.batchsize)
-        h  = zeros(Float32, c.batchsize)
-        @threads for n in 1:c.batchsize
-            e[n], ve[n], h[n] = sampling(models[n])
-        end
-        energy  = real(sum(e))  / c.iters / c.batchsize
-        venergy = real(sum(ve)) / c.iters / c.batchsize
-        magnet  = sum(h) / c.iters / c.batchsize
+        energy  = 0f0im
+        venergy = 0f0im
+        magnet  = 0f0
+        energy, venergy, magnet = sampling(model)
         entropy = logvenergy0 / c.N - 2f0 * it / c.N * log(c.l - energy)
 
         # Write Data
@@ -76,7 +66,7 @@ function sampling(model::GPmodel)
     xs, ys = mh(model)
     
     # Calculate Physical Value
-    for n in 1:length(xs)
+    @simd for n in 1:length(xs)
         x = xs[n]
         y = ys[n]
         e = energy(x, y, model) / c.N
@@ -85,7 +75,7 @@ function sampling(model::GPmodel)
         vE += (c.l - e) * conj(c.l - e)
         magnet  += h
     end
-    return E, vE, magnet
+    E / c.iters, vE / c.iters, magnet / c.iters
 end
 
 function mh(model::GPmodel)
@@ -99,5 +89,5 @@ function mh(model::GPmodel)
         outxs[i] = x
         outys[i] = y
     end
-    return outxs, outys
+    outxs, outys
 end

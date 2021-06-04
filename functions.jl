@@ -35,27 +35,6 @@ function update(model::GPmodel)
     return x, y
 end
 
-function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32}, ix::Integer)
-    out = 0f0im
-    ixnext = ix%c.N + 1
-    if x[ix] != x[ixnext]
-        yflip = (a.flip[ixnext] * a.flip[ix] * x)
-        out  += 2f0 * exp(yflip - y) - 1f0
-    else
-        out += 1f0
-    end
-    return -c.J * out / 4f0
-end
-
-function energy_heisenberg(x::Vector{Float32}, y::Complex{Float32})
-    out = 0f0im
-    for ix in 1:c.N
-        out += hamiltonian_heisenberg(x, y, ix)
-    end
-    return out
-end
-
-
 function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32}, 
                                 model::GPmodel, ix::Integer)
     out = 0f0im
