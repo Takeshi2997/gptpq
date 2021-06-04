@@ -12,7 +12,7 @@ function it_evolution(model::GPmodel)
         xydata = open(deserialize, "./data/" * filenames[it])
         xs, ys = model.xs, model.ys
         ys′ = copy(ys)
-        for i in 1:c.num
+        @threads for i in 1:c.num
             x = xs[i]
             y = ys[i]
             e = energy(x, y, model)
@@ -75,7 +75,7 @@ function sampling(model::GPmodel)
         vE += (c.l - e) * conj(c.l - e)
         magnet  += h
     end
-    E / c.iters, vE / c.iters, magnet / c.iters
+    real(E) / c.iters, real(vE) / c.iters, magnet / c.iters
 end
 
 function mh(model::GPmodel)
