@@ -15,7 +15,9 @@ function main()
     ψ = biys[1:c.num] .+ im * biys[c.num+1:end]
     ys = log.(ψ)
     model = makemodel(xs, ys)
-
+    outdata = (xs, ys)
+    open(io -> serialize(io, outdata), "./data/gpdata0000.dat", "w")
+ 
     # GP imaginary time evolution
     it_evolution(model)
 
