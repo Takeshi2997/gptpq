@@ -20,7 +20,7 @@ function it_evolution(model::GPmodel)
         end
         model = makemodel(xs, ys′)
         xs = [rand([1f0, -1f0], c.N) for i in 1:c.num]
-        ys = [inference(models[n], x) for x in xs]
+        ys = [inference(model, x) for x in xs]
         outdata = (xs, ys)
         open(io -> serialize(io, outdata), "./data/" * filenames[it+1], "w")
     end
