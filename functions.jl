@@ -16,23 +16,17 @@ function Flip()
 end
 const a = Flip()
 
-function update(model::GPmodel)
-    xs, ys = model.xs, model.ys
-    x = xs[end]
-    y = ys[end]
+function update!(model::GPmodel, x::Vector{Float32})
     n = length(x)
     rng = MersenneTwister(1234)
     randomnum = rand(rng, Float32, n)
-    for ix in 1:n
-        xflip = a.flip[ix] * x
-        yflip = inference(model, xflip)
+    @inbounds for ix in 1:n
+        x₁ = x[ix]
+        y  = inference(model, x)
+        yflip = inference(model, a.flip[ix] * x)
         prob  = exp(2f0 * real(yflip - y))
-        if randomnum[ix] < prob
-            x = xflip
-            y = yflip
-        end
+        x[ix] = ifelse(randomnum[ix] < prob, -x₁, x₁)
     end
-    return x, y
 end
 
 function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32}, 
@@ -97,17 +91,5 @@ function energy(x::Vector{Float32}, y::Complex{Float32}, model::GPmodel)
 #    e = energy_heisenberg(x, y, model)
     e = energy_XY(x, y, model)
     return e
-end
-
-function imaginary_evolution(model::GPmodel)
-    xs, ys = model.xs, model.ys
-    ys′ = copy(ys)
-    for n in 1:c.num
-        x = xs[n]
-        y = ys[n]
-        e = energy(x, y, model)
-        ys′[n] = log((c.l - e / c.N) * exp(y))
-    end 
-    GPcore.makedata(xs, ys′)
 end
 

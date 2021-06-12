@@ -2,9 +2,12 @@ module GaussianProcessTPQ
 include("./setup.jl")
 include("./core.jl")
 include("./model.jl")
-using Distributions, LinearAlgebra
+using Distributions, LinearAlgebra, Serialization
 
-function main()
+function gp_imaginary_time_evolution()
+    # rm Data File make
+    dirname = "./data"
+    rm(dirname, force=true, recursive=true)
     mkdir("./data")
 
     # Initialize Traces
@@ -20,7 +23,9 @@ function main()
  
     # GP imaginary time evolution
     it_evolution(model)
+end
 
+function gp_sampling()
     # MCMC Sampling
     measure()
 end

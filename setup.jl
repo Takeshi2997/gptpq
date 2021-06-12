@@ -13,6 +13,7 @@ struct GP_Data{T<:Real, S<:Integer}
     auxn::S
     burnintime::S
     iters::S
+    batchsize::S
     iT::S
     
     # Hyper Param
@@ -26,14 +27,15 @@ function GP_Data()
     J = 1f0
     t = 1f0
     l = 0.6f0
-    num = 4096
+    num = 1024
     auxn = 64
     burnintime = 10
-    iters = 5000
-    iT    = 100
+    iters = 1000
+    batchsize = 64
+    iT = 100
     θ₁ = 1f0
     θ₂ = 0.01f0
-    GP_Data(N, h, J, t, l, num, auxn, burnintime, iters, iT, θ₁, θ₂)
+    GP_Data(N, h, J, t, l, num, auxn, burnintime, iters, batchsize, iT, θ₁, θ₂)
 end
 
 const c = GP_Data()

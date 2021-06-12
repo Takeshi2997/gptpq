@@ -2,7 +2,7 @@ include("./setup.jl")
 using LinearAlgebra
 
 mutable struct GPmodel{T<:AbstractArray, S<:Complex}
-    xs::Vector{T}
+    zs::Vector{T}
     ys::Vector{S}
     iKu::Vector{S}
     iΣ::Array{S}
@@ -25,20 +25,25 @@ function makemodel(xs::Vector{Vector{T}}, ys::Vector{Complex{T}}) where {T<:Real
     iΣ  = inv(Σ̂)
 
     # Output
-    GPmodel(xs, ys, iKu, iΣ)
+    GPmodel(zs, ys, iKu, iΣ)
 end
 
 function inference(model::GPmodel, x::Vector{T}) where {T<:Real}
-    xs, ys, iKu, iΣ = model.xs, model.ys, model.iKu, model.iΣ
+    zs, ys, iKu, iΣ = model.zs, model.ys, model.iKu, model.iΣ
 
     # Compute mu var
-    kv = [kernel(xs[i], x) for i in 1:c.auxn]
+    kv = map(z -> kernel(z, x), zs)
     k0 = kernel(x, x)
     mu = kv' * iKu
     var = k0 - kv' * iΣ * kv
 
     # sample from gaussian
     log.(sqrt(var) * randn(Complex{T}) + mu)
+end
+
+function distance(x::Vector{T}, y::Vector{T}) where {T<:Real}
+    rs = map(i -> norm(circshift(x, i-1) - y) / 2f0 / c.N, 1:c.N)
+    minimum(rs)
 end
 
 function kernel(x::Vector{T}, y::Vector{T}) where {T<:Real}
@@ -49,13 +54,13 @@ end
 function covar(xs::Vector{Vector{T}}) where {T<:Real}
     n = length(xs)
     K = zeros(Complex{Float32}, n, n)
-    I = Diagonal(ones(Float32, n))
-    for j in 1:n
+    I0 = Diagonal(ones(Float32, n))
+    @inbounds for j in 1:n
         y = xs[j]
-        for i in 1:n
+        @inbounds for i in 1:n
             x = xs[i]
             K[i, j] = kernel(x, y)
         end
     end
-    return K + 1f-6 * I
+    return K + 1f-6 * I0
 end
