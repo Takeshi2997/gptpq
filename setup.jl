@@ -27,11 +27,11 @@ function GP_Data()
     J = 1f0
     t = 1f0
     l = 0.6f0
-    num = 1024
+    num = 256
     auxn = 64
     burnintime = 10
-    iters = 1000
-    batchsize = 64
+    iters = 200
+    batchsize = 8
     iT = 100
     θ₁ = 1f0
     θ₂ = 0.01f0

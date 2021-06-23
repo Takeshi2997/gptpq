@@ -9,11 +9,10 @@ const filename  = "physicalvalue.txt"
 function it_evolution(model::GPmodel)
     for it in 1:c.iT
         # Model Update!
-        xs′ = [rand([1f0, -1f0], c.N) for i in 1:c.num]
-        ys  = [inference(model, x) for x in xs′]
+        xs, ys = model.xs, model.ys
         ys′ = copy(ys)
         @simd for i in 1:c.num
-            x = xs′[i]
+            x = xs[i]
             y = ys[i]
             e = energy(x, y, model)
             ys′[i] = log((c.l - e / c.N) * exp(y))
