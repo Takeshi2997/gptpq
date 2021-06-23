@@ -17,8 +17,8 @@ function it_evolution(model::GPmodel)
             e = energy(x, y, model)
             ys′[i] = log((c.l - e / c.N) * exp(y))
         end
-        model = makemodel(xs′, ys′)
-        outdata = (xs′, ys′)
+        model = makemodel(xs, ys′)
+        outdata = (xs, ys′)
         open(io -> serialize(io, outdata), "./data/" * filenames[it+1], "w")
     end
 end
