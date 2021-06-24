@@ -55,8 +55,8 @@ function measure()
             write(io, string(magnet))
             write(io, "\n")
         end
+        logvenergy0 += log(venergy)
     end 
-    logvenergy0 += log(venergy)
 end
 
 function sampling(model::GPmodel)
