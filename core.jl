@@ -29,6 +29,7 @@ end
 function measure()
     touch("./data/" * filename)
     # Imaginary roop
+    logvenergy = 0.0
     for it in 1:c.iT
         # Make model
         xydata = open(deserialize, "./data/" * filenames[it+1])
@@ -57,7 +58,7 @@ function measure()
         energy  = real(ene) / c.nmc
         venergy = vene / c.nmc
         magnet  = mag / c.nmc
-        β = 2.0 * it / c.nspin / (c.l - energy)
+        entropy = logvenergy / c.nspin - 2.0 * it / c.nspin * log(c.l - energy)
 
         # Write Data
         open("./data/" * filename, "a") do io
@@ -65,11 +66,12 @@ function measure()
             write(io, "\t")
             write(io, string(energy))
             write(io, "\t")
-            write(io, string(β))
+            write(io, string(entropy))
             write(io, "\t")
             write(io, string(magnet))
             write(io, "\n")
         end
+        logvenergy += log(venergy)
     end 
 end
 

@@ -28,7 +28,7 @@ function GP_Data()
     t = 1.0
     l = 0.8
     ndata = 64
-    nmc = 256
+    nmc = 1024
     mcskip = 16
     iT = 100
     θ₁ = 1.0
