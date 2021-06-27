@@ -44,8 +44,8 @@ function measure()
 
         # Calculate Physical Value
         ene  = 0.0im
-        vene = 0.0im
-        mag  = 0.0im
+        vene = 0.0
+        mag  = 0.0
         @simd for x in x_mc
             y = predict(model, x)
             e = funcenergy(x, y, model) / c.nspin
@@ -63,9 +63,9 @@ function measure()
         open("./data/" * filename, "a") do io
             write(io, string(it))
             write(io, "\t")
-            write(io, string(β))
-            write(io, "\t")
             write(io, string(energy))
+            write(io, "\t")
+            write(io, string(β))
             write(io, "\t")
             write(io, string(magnet))
             write(io, "\n")
