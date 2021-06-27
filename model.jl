@@ -20,7 +20,7 @@ end
 function GPmodel(xs::Vector{State}, ys::Vector{T}) where {T<:Complex}
     iK = Array{T}(undef, c.ndata, c.ndata)
     makeinverse(iK, xs)
-    pvec = iK * ys
+    pvec = iK * exp.(ys)
     GPmodel(xs, ys, pvec, iK)    
 end
 
@@ -58,6 +58,6 @@ function predict(model::GPmodel, x::State)
     var = k0 - kv' * iK * kv
 
     # sample from gaussian
-    sqrt(var) * randn(Complex{Float64}) + mu
+    log(sqrt(var) * randn(Complex{Float64}) + mu)
 end
 

@@ -28,11 +28,11 @@ function GP_Data()
     t = 1.0
     l = 0.8
     ndata = 64
-    nmc = 1024
+    nmc = 256
     mcskip = 16
     iT = 200
     θ₁ = 1.0
-    θ₂ = 100.0
+    θ₂ = 0.01
     GP_Data(nspin, h, J, t, l, ndata, nmc, mcskip, iT, θ₁, θ₂)
 end
 
