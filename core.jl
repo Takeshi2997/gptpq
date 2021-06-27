@@ -54,9 +54,9 @@ function measure()
             vene += abs2(c.l - e)
             mag  += h
         end
-        energy  = real(eneloc) / c.nmc
-        venergy = veneloc / c.nmc
-        magnet  = magloc / c.nmc
+        energy  = real(ene) / c.nmc
+        venergy = vene / c.nmc
+        magnet  = mag / c.nmc
         β = 2.0 * it / c.nspin / (c.l - energy)
 
         # Write Data
