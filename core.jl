@@ -81,10 +81,11 @@ function mh(model::GPmodel)
     rng = MersenneTwister(1234)
     prob = rand(rng, c.nmc * c.mcskip)
     @inbounds for i in 1:c.nmc
-        for j in 1:c.mcskip
+        @inbounds for j in 1:c.mcskip
             update!(model, x, prob[i * j])
         end
         outxs[i] = x
     end
     outxs
 end
+

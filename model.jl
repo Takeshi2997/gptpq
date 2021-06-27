@@ -1,15 +1,11 @@
 mutable struct State{T<:Real}
     spin::Vector{T}
+    shift::Vector{Vector{T}}
 end
-
-# mutable struct State{T<:Real}
-#     spin::Vector{T}
-#     shift::Vector{Vector{T}}
-# end
-# function State(x::Vector{T}) where {T<:Real}
-#     shift = [circshift(x, s) for s in 1:c.nspin]
-#     State(x, shift)
-# end
+function State(x::Vector{T}) where {T<:Real}
+    shift = [circshift(x, s) for s in 1:c.nspin]
+    State(x, shift)
+end
 
 mutable struct GPmodel{T<:Complex}
     xs::Vector{State}
@@ -25,16 +21,10 @@ function GPmodel(xs::Vector{State}, ys::Vector{T}) where {T<:Complex}
 end
 
 function kernel(x1::State, x2::State)
-    v = norm(x1.spin - x2.spin)
-    v /= c.nspin
-    c.θ₁ * exp.(-v / c.θ₂)
+    v = [norm(x1.shift[n] - x2.spin) for n in 1:length(x1.spin)]
+    v ./= c.nspin
+    sum(c.θ₁ * exp.(-v ./ c.θ₂))
 end
-
-# function kernel(x1::State, x2::State)
-#     v = [norm(x1.shift[n] - x2.spin) for n in 1:length(x1.spin)]
-#     v ./= c.nspin
-#     sum(c.θ₁ * exp.(-v ./ c.θ₂))
-# end
 
 function makeinverse(iK::Array{T}, data_x::Vector{State}) where {T<:Complex}
     for i in 1:c.ndata
