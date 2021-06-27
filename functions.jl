@@ -1,95 +1,45 @@
 include("./setup.jl")
 include("./model.jl")
-using LinearAlgebra, Random
+using LinearAlgebra
 
 struct Flip{T<:Real}
     flip::Vector{Diagonal{T}}
 end
 function Flip()
-    flip = Vector{Diagonal{Float32}}(undef, c.N)
-    for i in 1:c.N
-        o = Diagonal(ones(Float32, c.N))
-        o[i, i] *= -1f0
+    flip = Vector{Diagonal{Float64}}(undef, c.nspin)
+    for i in 1:c.nspin
+        o = Diagonal(ones(Float64, c.nspin))
+        o[i, i] *= -1.0
         flip[i] = o
     end
     Flip(flip)
 end
 const a = Flip()
 
-function update!(model::GPmodel, x::Vector{Float32})
-    n = length(x)
-    rng = MersenneTwister(1234)
-    randomnum = rand(rng, Float32, n)
-    @inbounds for ix in 1:n
-        x₁ = x[ix]
-        y  = inference(model, x)
-        yflip = inference(model, a.flip[ix] * x)
-        prob  = exp(2f0 * real(yflip - y))
-        x[ix] = ifelse(randomnum[ix] < prob, -x₁, x₁)
-    end
+function update!(model::GPmodel, x::State, prob::Float64)
+    pos = rand(collect(1:c.nspin))
+    xflip_spin = copy(x.spin)
+    xflip_spin[pos] *= -1
+    xflip = State(xflip_spin)
+    y = predict(model, x)
+    yflip = predict(model, xflip)
+    x.spin[pos] *= ifelse(prob < exp(2 * real(yflip - y)), -1.0, 1.0)
 end
 
-function hamiltonian_heisenberg(x::Vector{Float32}, y::Complex{Float32}, 
-                                model::GPmodel, ix::Integer)
-    out = 0f0im
-    ixnext = ix%c.N + 1
-    if x[ix] * x[ixnext] < 0f0
-        yflip = infelence(model, a.flip[ixnext] * a.flip[ix] * x)
-        out  += 2f0 * exp(yflip - y) - 1f0
-    else
-        out += 1f0
-    end
-    return -c.J * out / 4f0
-end
-
-function energy_heisenberg(x::Vector{Float32}, y::Complex{Float32}, model::GPmodel)
-    out = 0f0im
-    for ix in 1:c.N
-        out += hamiltonian_heisenberg(x, y, model, ix)
+function energy_ising(x::State, y::Complex{T}, model::GPmodel) where {T<:Real}
+    out = 0.0im
+    for iy in 1:c.nspin
+        iynext = iy%c.nspin + 1
+        xflip_spin = a.flip[iynext] * x.spin
+        xflip = State(xflip_spin)
+        yflip = predict(model, xflip)
+        out  += -x.spin[iy] * x.spin[iynext] / 4.0 - c.h * exp(yflip - y) / 2.0
     end
     return out
 end
 
-function hamiltonian_ising(x::Vector{Float32}, y::Complex{Float32}, 
-                           model::GPmodel, iy::Integer)
-    out = 0f0im
-    iynext = iy%c.N + 1
-    yflip = inference(model, a.flip[iynext] * x)
-    out  += x[iy] * x[iynext] / 4f0 + c.h * exp(yflip - y) / 2f0
-    return -out
-end
-
-function energy_ising(x::Vector{Float32}, y::Complex{Float32}, model::GPmodel)
-    out = 0f0im
-    for iy in 1:c.N
-        out += hamiltonian_ising(x, y, model, iy)
-    end
-    return out
-end
-
-function hamiltonian_XY(x::Vector{T}, y::Complex{T}, model::GPmodel, iy::Integer) where {T <: Real}
-    out = 0f0im
-    iynext = iy%c.N + 1
-    if x[iy] * x[iynext] < 0f0
-        yflip = inference(model, a.flip[iynext] * a.flip[iy] * x)
-        out  += exp(yflip - y)
-    end
-    return c.t * out
-end
-
-function energy_XY(x::Vector{T}, y::Complex{T}, model::GPmodel) where {T <: Real}
-    out = 0f0im
-    for iy in 1:c.N
-        out += hamiltonian_XY(x, y, model, iy)
-    end
-    return out
-end
-
-function energy(x::Vector{Float32}, y::Complex{Float32}, model::GPmodel)
-    e = 0f0im
-#    e = energy_ising(x, y, model)
-#    e = energy_heisenberg(x, y, model)
-    e = energy_XY(x, y, model)
+function funcenergy(x::State, y::Complex{T}, model::GPmodel) where {T<:Real}
+    e = energy_ising(x, y, model)
     return e
 end
 

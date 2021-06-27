@@ -11,18 +11,21 @@ function gp_imaginary_time_evolution()
     mkdir("./data")
 
     # Initialize Traces
-    xs = [rand([1f0, -1f0], c.N) for i in 1:c.num]
-    bimu = zeros(Float32, 2 * c.num)
-    biI  = Array(Diagonal(ones(Float32, 2 * c.num)))
+    xs = Vector{State}(undef, c.ndata)
+    for i in 1:c.ndata
+        xs[i] = State(rand([1.0, -1.0], c.nspin))
+    end
+    bimu = zeros(Float64, 2 * c.ndata)
+    biI  = Array(Diagonal(ones(Float64, 2 * c.ndata)))
     biys = rand(MvNormal(bimu, biI))
-    ψ = biys[1:c.num] .+ im * biys[c.num+1:end]
+    ψ = biys[1:c.ndata] .+ im * biys[c.ndata+1:end]
     ys = log.(ψ)
-    model = makemodel(xs, ys)
+    model = GPmodel(xs, ys)
     outdata = (xs, ys)
     open(io -> serialize(io, outdata), "./data/gpdata0000.dat", "w")
  
     # GP imaginary time evolution
-    it_evolution(model)
+    imaginarytime(model)
 end
 
 function gp_sampling()

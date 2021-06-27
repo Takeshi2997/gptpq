@@ -1,19 +1,19 @@
 struct GP_Data{T<:Real, S<:Integer}
     # System Size
-    N::S
+    nspin::S
     
     # System Param
     h::T
     J::T
     t::T
+
+    # Update Param
     l::T
     
     # Repeat Number
-    num::S
-    auxn::S
-    burnintime::S
-    iters::S
-    batchsize::S
+    ndata::S
+    nmc::S
+    mcskip::S
     iT::S
     
     # Hyper Param
@@ -22,20 +22,18 @@ struct GP_Data{T<:Real, S<:Integer}
 end
 
 function GP_Data()
-    N = 80
-    h = 1f0
-    J = 1f0
-    t = 1f0
-    l = 0.6f0
-    num = 256
-    auxn = 64
-    burnintime = 10
-    iters = 200
-    batchsize = 8
-    iT = 100
-    θ₁ = 1f0
-    θ₂ = 0.01f0
-    GP_Data(N, h, J, t, l, num, auxn, burnintime, iters, batchsize, iT, θ₁, θ₂)
+    nspin = 80
+    h = 1.0
+    J = 1.0
+    t = 1.0
+    l = 0.8
+    ndata = 64
+    nmc = 1024
+    mcskip = 16
+    iT = 200
+    θ₁ = 1.0
+    θ₂ = 100.0
+    GP_Data(nspin, h, J, t, l, ndata, nmc, mcskip, iT, θ₁, θ₂)
 end
 
-const c = GP_Data()
+c = GP_Data()
