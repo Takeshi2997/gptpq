@@ -18,7 +18,7 @@ mutable struct GPmodel{T<:Complex}
 end
 function GPmodel(data_x::Vector{State}, data_y::Vector{T}) where {T<:Complex}
     # Step 1
-    data_z = [State(rand([1f0, -1f0], c.NSpin)) for i in 1:c.Naux]
+    data_z = [State(rand([1.0, -1.0], c.NSpin)) for i in 1:c.Naux]
     KMM = Array{T}(undef, c.Naux, c.Naux)
     makematrix(KMM, data_z)
     KMN = [kernel(data_z[i], data_x[j]) for i in 1:length(data_z), j in 1:length(data_x)]
