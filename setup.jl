@@ -1,24 +1,26 @@
-module Const
-
-# System Size
-const dimS = 24
-const dimB = 120
-const dimI = 8
-
-# System Param
-const t = 1f0
-const J = 1f0
-const l = 0.6f0
-
-# Repeat Number
-const init  = 32
-const burnintime = 10
-const iters = 1000
-const iT    = 100
-const batchsize = 16
-
-# Hyper Param
-const θ₁ = 1f0
-const θ₂ = 0.01f0
-
+struct GP_Data{T<:Real, S<:Integer}
+    NSpin::S
+    NData::S
+    NMC::S
+    MCSkip::S
+    H::T
+    t::T
+    J::T
+    l::T
+    A::T
 end
+function GP_Data()
+    NSpin = 80
+    NData = 64
+    NMC = 5120
+    MCSkip = 16
+    H = 2.0
+    t = 1.0
+    J = 1.0
+    l = 1.6
+    A = 0.21
+    GP_Data(NSpin, NData, NMC, MCSkip, H, t, J, l, A)
+end
+c = GP_Data()
+
+
