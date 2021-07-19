@@ -47,8 +47,8 @@ function kernel(x1::State, x2::State)
 end
 
 function makematrix(K::Array{T}, data_x::Vector{State}) where{T<:Complex}
-    for i in 1:c.NData
-        for j in i:c.NData
+    for i in 1:length(data_x)
+        for j in i:length(data_x)
             K[i, j] = kernel(data_x[i], data_x[j])
             K[j, i] = K[i, j]
         end
