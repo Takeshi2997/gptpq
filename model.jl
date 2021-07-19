@@ -37,7 +37,7 @@ function GPmodel(data_x::Vector{State}, data_y::Vector{T}) where {T<:Complex}
     KI = makeinverse(Σ₀)
 
     # Output
-    GPmodel(xs, ys, zs, pvec, KI)
+    GPmodel(data_x, data_y, data_z, pvec, KI)
 end
 
 function kernel(x1::State, x2::State)
