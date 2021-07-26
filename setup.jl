@@ -1,7 +1,6 @@
 struct GP_Data{T<:Real, S<:Integer}
     NSpin::S
     NData::S
-    Naux::S
     NMC::S
     MCSkip::S
     H::T
@@ -13,8 +12,7 @@ struct GP_Data{T<:Real, S<:Integer}
 end
 function GP_Data()
     NSpin = 80
-    NData = 1024
-    Naux = 64
+    NData = 64
     NMC = 1024
     MCSkip = 16
     H = 2.0
