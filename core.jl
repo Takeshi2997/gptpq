@@ -10,7 +10,7 @@ function imaginarytime(model::GPmodel)
         e = localenergy(data_x[i], model)
         ψ[i] = (c.l - e / c.NSpin) * exp(data_y[i])
     end
-    data_y = log.(ψ)
+    data_y = log.(ψ .+ 1.0)
     # v = sum(ψ) / c.NData
     # data_y .-= log(v)
     GPmodel(data_x, data_y)
