@@ -2,51 +2,26 @@ include("./setup.jl")
 
 mutable struct State{T<:Real}
     spin::Vector{T}
-#    shift::Vector{Vector{T}}
 end
-# function State(x::Vector{T}) where {T<:Real}
-#    shift = [circshift(x, s) for s in 1:c.NSpin]
-#    State(x, shift)
-# end
 
 mutable struct GPmodel{T<:Complex}
     data_x::Vector{State}
     data_y::Vector{T}
-    data_z::Vector{State}
     pvec::Vector{T}
     KI::Array{T}
 end
 function GPmodel(data_x::Vector{State}, data_y::Vector{T}) where {T<:Complex}
-    # Step 1
-    data_z = Vector{State}(undef, c.Naux)
-    for i in 1:c.Naux
-        data_z[i] = State(rand([1.0, -1.0], c.NSpin))
-    end
-    KMM = Array{T}(undef, c.Naux, c.Naux)
-    makematrix(KMM, data_z)
-    KMN = [kernel(data_z[i], data_x[j]) for i in 1:length(data_z), j in 1:length(data_x)]
-
-    # Step 2
-    Λ = Diagonal([kernel(data_x[i], data_x[i]) + KMN[:, i]' * (KMM \ KMN[:, i]) + 1f-6 for i in 1:length(data_x)])
-
-    # Step3
-    QMM = KMM + KMN * (Λ \ KMN')
-    u₀ = KMM * (QMM \ (KMN * (Λ \ data_y)))
-    Σ₀ = KMM * (QMM \ KMM)
-    pvec = KMM \ u₀
-    KI = makeinverse(Σ₀)
-
-    # Output
-    GPmodel(data_x, data_y, data_z, pvec, KI)
+    KI = Array{T}(undef, c.NData, c.NData)
+    makematrix(KI, data_x)
+    makeinverse(KI)
+    pvec = KI * data_y
+    GPmodel(data_x, data_y, pvec, KI)
 end
 
 function kernel(x1::State, x2::State)
-#    v = [norm(x1.shift[n] - x2.spin)^2 for n in 1:length(x1.spin)]
-#    v ./= c.NSpin
-#    sum(exp.(-v ./ c.A))
     v = norm(x1.spin - x2.spin)^2
     v /= c.NSpin
-    exp(-v / c.A)
+    c.B * exp(-v / c.A)
 end
 
 function makematrix(K::Array{T}, data_x::Vector{State}) where{T<:Complex}
@@ -66,16 +41,16 @@ function makeinverse(KI::Array{T}) where {T<:Complex}
 end
 
 function predict(x::State, model::GPmodel)
-    data_z, data_y, pvec, KI = model.data_z, model.data_y, model.pvec, model.KI
+    data_x, data_y, pvec, KI = model.data_x, model.data_y, model.pvec, model.KI
 
     # Compute mu var
-    kv = map(z -> kernel(z, x), data_z)
+    kv = map(x1 -> kernel(x1, x), data_x)
     k0 = kernel(x, x)
     mu = kv' * pvec
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    log((exp(c.η * (sqrt(var) * randn(typeof(mu)) + mu)) - 1.0) / c.η)
+    log((exp(sqrt(var) * randn(typeof(mu)) + mu) - 1.0))
 end
 
 
