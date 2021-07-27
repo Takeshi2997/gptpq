@@ -19,7 +19,7 @@ function GP_Data()
     t = 1.0
     J = 1.0
     l = 1.6
-    A = 0.21
+    A = 0.18
     B = 1e-3
     GP_Data(NSpin, NData, NMC, MCSkip, H, t, J, l, A, B)
 end
