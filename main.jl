@@ -10,6 +10,9 @@ function main(filename::String)
     end
     eng = EngArray[1]
     data_x = Vector{State}(undef, c.NData)
+    for i in 1:c.NData
+        data_x[i] = State(rand([1.0, -1.0], c.NSpin))
+    end
     data_y = zeros(Complex{Float64}, c.NData)
     model = GPmodel(data_x, data_y)
 
