@@ -10,15 +10,7 @@ function main(filename::String)
     end
     eng = EngArray[1]
     data_x = Vector{State}(undef, c.NData)
-    data_y = Vector{Float64}(undef, c.NData)
-    for i in 1:c.NData
-        data_x[i] = State(rand([1.0, -1.0], c.NSpin))
-    end
-    bimu = zeros(Float64, 2 * c.NData)
-    biI  = Array(Diagonal(ones(Float64, 2 * c.NData)))
-    biψ  = rand(MvNormal(bimu, biI))
-    ψ = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
-    data_y = log.(ψ .+ 1.0)
+    data_y = zeros(Complex{Float64}, c.NData)
     model = GPmodel(data_x, data_y)
 
     batch_x = Vector{State}(undef, c.NMC)

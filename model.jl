@@ -2,11 +2,6 @@ include("./setup.jl")
 
 mutable struct State{T<:Real}
     spin::Vector{T}
-    shift::Vector{Vector{T}}
-end
-function State(x::Vector{T}) where {T<:Real}
-    shift = [circshift(x, s) for s in 1:c.NSpin]
-    State(x, shift)
 end
 
 mutable struct GPmodel{T<:Complex}
@@ -55,7 +50,7 @@ function predict(x::State, model::GPmodel)
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    log((exp(sqrt(var) * randn(typeof(mu)) + mu) - 1.0))
+    sqrt(var) * randn(typeof(mu)) + mu
 end
 
 
