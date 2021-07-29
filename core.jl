@@ -7,7 +7,7 @@ function imaginarytime(model::GPmodel)
     data_x, data_y = model.data_x, model.data_y
     ψ = copy(data_y)
     @threads for i in 1:c.NData
-        e = localenergy(data_x[i], model)
+        e = localenergy(data_x[i], data_y[i], model)
         ψ[i] = (c.l - e / c.NSpin) * exp(data_y[i])
     end
     data_y = log.(ψ .+ 1.0)
@@ -27,8 +27,7 @@ function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
     State(x.spin)
 end
 
-function localenergy(x::State, model::GPmodel)
-    y = predict(x, model)
+function localenergy(x::State, y::T, model::GPmodel) where {T<:Complex}
     eloc = 0.0im
     @simd for i in 1:c.NSpin
         e = hamiltonian(i, x, y, model)
