@@ -17,12 +17,12 @@ function GP_Data()
     NData = 64
     NMC = 1024
     MCSkip = 16
-    iT = 200
+    iT = 100
     H = 2.0
     t = 1.0
     J = 1.0
     l = 1.6
-    A = 0.1
+    A = 0.05
     B = 0.1
     ξ = 0.1
     GP_Data(NSpin, NData, NMC, MCSkip, iT, H, t, J, l, A, B, ξ)
