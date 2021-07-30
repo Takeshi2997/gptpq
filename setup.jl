@@ -29,4 +29,7 @@ function GP_Data()
 end
 c = GP_Data()
 
-
+mutable struct Count{T<:Integer}
+    t::T
+end
+a = Count(0)
