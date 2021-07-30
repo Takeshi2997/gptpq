@@ -13,7 +13,11 @@ function main(filename::String)
     for i in 1:c.NData
         data_x[i] = State(rand([1.0, -1.0], c.NSpin))
     end
-    data_y = zeros(Complex{Float64}, c.NData)
+    bimu = zeros(Float64, 2 * c.NData)
+    biI  = Array(Diagonal(ones(Float64, 2 * c.NData)))
+    biψ  = rand(MvNormal(bimu, biI))
+    ψ = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
+    data_y = log.(ψ)
     model = GPmodel(data_x, data_y)
 
     batch_x = Vector{State}(undef, c.NMC)
@@ -23,8 +27,9 @@ function main(filename::String)
     end
 
     logvene = 0.0
-    for k in 1:200
+    for k in 1:c.iT
         model = imaginarytime(model)
+        setfield!(a, :t, k-1)
         ene, vene = energy(batch_x, model)
         lene = ifelse(c.l > ene, c.l - ene, 1e-6)
         entropy = logvene / c.NSpin - 2.0 * k / c.NSpin * log(lene)

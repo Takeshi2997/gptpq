@@ -11,8 +11,8 @@ function imaginarytime(model::GPmodel)
         ψ[i] = (c.l - e / c.NSpin) * exp(data_y[i])
     end
     data_y = log.(ψ)
-    # v = sum(ψ) / c.NData
-    # data_y .-= log(v)
+    v = sum(ψ) / c.NData
+    data_y .-= log(v)
     GPmodel(data_x, data_y)
 end
 
