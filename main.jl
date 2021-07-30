@@ -28,8 +28,8 @@ function main(filename::String)
 
     logvene = 0.0
     for k in 1:c.iT
-        model = imaginarytime(model)
         setfield!(a, :t, k-1)
+        model = imaginarytime(model)
         ene, vene = energy(batch_x, model)
         lene = ifelse(c.l > ene, c.l - ene, 1e-6)
         entropy = logvene / c.NSpin - 2.0 * k / c.NSpin * log(lene)
