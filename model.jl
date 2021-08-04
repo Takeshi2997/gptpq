@@ -40,10 +40,10 @@ function makematrix(K::Array{T}, data_x::Vector{State}) where{T<:Complex}
 end 
 
 function makeinverse(KI::Array{T}) where {T<:Complex}
-    # KI[:, :] = inv(KI)
-    U, Δ, V = svd(KI)
-    invΔ = Diagonal(1.0 ./ Δ .* (Δ .> 1e-6))
-    KI[:, :] = V * invΔ * U'
+    KI[:, :] = inv(KI)
+    # U, Δ, V = svd(KI)
+    # invΔ = Diagonal(1.0 ./ Δ .* (Δ .> 1e-6))
+    # KI[:, :] = V * invΔ * U'
 end
 
 function predict(x::State, model::GPmodel)
@@ -58,7 +58,7 @@ function predict(x::State, model::GPmodel)
     # sample from gaussian
     y = sqrt(var) * randn(typeof(mu)) + mu
     τ = f(a.t)
-    log(exp(-τ / c.ξ) * y + (1.0 - exp(-τ / c.ξ)) * exp(y))
+    exp(-τ / c.ξ) * log(y) + (1.0 - exp(-τ / c.ξ)) * y
 end
 
 function f(t::Integer)
