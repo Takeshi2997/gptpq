@@ -30,7 +30,7 @@ function main(filename::String)
         setfield!(a, :t, k-1)
         model = imaginarytime(model)
         ene = energy(batch_x, model)
-        β = 2.0 * k / c.NSpin / (c.l - ene)
+        β = 2.0 * k / c.NSpin / (c.l - ene / c.NSpin)
         open("./data/" * filename, "a") do io
             write(io, string(k))
             write(io, "\t")
