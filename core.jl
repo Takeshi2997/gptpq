@@ -42,13 +42,11 @@ end
 function physicalvals(x::State, model::GPmodel)
     y = predict(x, model)
     eloc = 0.0im
-    vloc = 0.0im
     @simd for i in 1:c.NSpin
         e = hamiltonian(i, x, y, model)
         eloc += e / c.NSpin
-        vloc += (c.l - e / c.NSpin) * conj(c.l - e / c.NSpin)
     end
-    [eloc, vloc]
+    [eloc, (c.l - eloc) * conj(c.l - eloc)]
 end
 
 function energy(x_mc::Vector{State}, model::GPmodel)
