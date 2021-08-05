@@ -1,5 +1,5 @@
 include("./setup.jl")
-
+include("./nlsolve.jl")
 
 mutable struct State{T<:Real}
     spin::Vector{T}
@@ -57,8 +57,8 @@ function predict(x::State, model::GPmodel)
 
     # sample from gaussian
     y = sqrt(var) * randn(typeof(mu)) + mu
-    τ = f(a.t)
-    exp(-τ / c.ξ) * log(y) + (1.0 - exp(-τ / c.ξ)) * y
+    τ = fτ(a.t)
+    f(y, exp(-τ/c.ξ))
 end
 
 function f(t::Integer)
