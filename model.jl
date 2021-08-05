@@ -61,9 +61,4 @@ function predict(x::State, model::GPmodel)
     f(y, exp(-τ/c.ξ))
 end
 
-function f(t::Integer)
-    x = t/c.iT
-    x / (1.0 - x)
-end
-
 
