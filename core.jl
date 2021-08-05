@@ -45,8 +45,8 @@ function physicalvals(x::State, model::GPmodel)
     vloc = 0.0im
     @simd for i in 1:c.NSpin
         e = hamiltonian(i, x, y, model)
-        eloc += e
-        vloc += (c.l - e) * conj(c.l - e)
+        eloc += e / c.NSpin
+        vloc += (c.l - e / c.NSpin) * conj(c.l - e / c.NSpin)
     end
     [eloc, vloc]
 end

@@ -33,7 +33,7 @@ function main(filename::String)
         setfield!(a, :t, k-1)
         model = imaginarytime(model)
         ene, vene = energy(batch_x, model)
-        entropy = logvene / c.NSpin - 2.0 * k / c.NSpin * log(c.l - ene / c.NSpin)
+        entropy = logvene / c.NSpin - 2.0 * k / c.NSpin * log(c.l - ene)
         open("./data/" * filename, "a") do io
             write(io, string(k))
             write(io, "\t")
