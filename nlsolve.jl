@@ -5,12 +5,12 @@ function fτ(t::Integer)
     x / (1.0 - x)
 end
 
-function f(y::Complex{Float64}, α::Float64)
-    α * log(y) + (1.0 - α) * y
+function f(y::Complex{Float64})
+    log(y) + y
 end
 
-function g(y::Complex{Float64}, α::Float64, ψ::Complex{Float64})
-    exp(f(y, α)) - ψ
+function g(y::Complex{Float64}, ψ::Complex{Float64})
+    f(y) - log(ψ)
 end
 
 function nls(func, params...; ini = [0.0])

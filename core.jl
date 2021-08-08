@@ -6,13 +6,12 @@ using Base.Threads, LinearAlgebra, Random, Folds
 
 function imaginarytime(model::GPmodel)
     data_x, data_y = model.data_x, model.data_y
-    τ = fτ(a.t)
     ψ = copy(data_y)
     @threads for i in 1:c.NData
         e = localenergy(data_x[i], data_y[i], model)
         ψ[i] = (c.l - e / c.NSpin) * exp(data_y[i])
     end
-    data_y = nls.(g, exp(-τ/c.ξ), ψ, ini=1.0+0.0im)
+    data_y = nls.(g, ψ, ini=1.0+0.0im)
     data_y ./= norm(data_y)
     GPmodel(data_x, data_y)
 end

@@ -57,8 +57,7 @@ function predict(x::State, model::GPmodel)
 
     # sample from gaussian
     y = sqrt(var) * randn(typeof(mu)) + mu
-    τ = fτ(a.t)
-    f(y, exp(-τ/c.ξ))
+    f(y)
 end
 
 
