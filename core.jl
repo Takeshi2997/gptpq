@@ -5,7 +5,7 @@ using Base.Threads, LinearAlgebra, Random, Folds
 
 function imaginarytime(model::GPmodel)
     data_x, data_y, ψ0 = model.data_x, model.data_y, model.ψ0
-    data_y .*= log.(ψ0)
+    data_y .+= log.(ψ0)
     ψ = copy(data_y)
     @threads for i in 1:c.NData
         e = localenergy(data_x[i], data_y[i], model)
