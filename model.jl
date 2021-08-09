@@ -1,5 +1,4 @@
 include("./setup.jl")
-include("./nlsolve.jl")
 
 mutable struct State{T<:Real}
     spin::Vector{T}
@@ -13,15 +12,16 @@ end
 mutable struct GPmodel{T<:Complex}
     data_x::Vector{State}
     data_y::Vector{T}
+    ψ0::Vector{T}
     pvec::Vector{T}
     KI::Array{T}
 end
-function GPmodel(data_x::Vector{State}, data_y::Vector{T}) where {T<:Complex}
+function GPmodel(data_x::Vector{State}, data_y::Vector{T}, ψ0::Vector{T}) where {T<:Complex}
     KI = Array{T}(undef, c.NData, c.NData)
     makematrix(KI, data_x)
     makeinverse(KI)
     pvec = KI * data_y
-    GPmodel(data_x, data_y, pvec, KI)
+    GPmodel(data_x, data_y, ψ0, pvec, KI)
 end
 
 function kernel(x1::State, x2::State)
@@ -56,8 +56,6 @@ function predict(x::State, model::GPmodel)
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    y = sqrt(var) * randn(typeof(mu)) + mu
-    f(y)
+    sqrt(var) * randn(typeof(mu)) + mu + log(randn(typeof(mu)))
 end
-
 

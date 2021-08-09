@@ -1,7 +1,6 @@
 include("./setup.jl")
 include("./model.jl")
 include("./core.jl")
-include("./nlsolve.jl")
 using LinearAlgebra, Random, Distributions
 
 EngArray = Vector{MersenneTwister}(undef, nthreads())
@@ -17,9 +16,10 @@ function main(filename::String)
     bimu = zeros(Float64, 2 * c.NData)
     biI  = Array(Diagonal(ones(Float64, 2 * c.NData)))
     biψ  = rand(MvNormal(bimu, biI))
-    ψ = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
-    data_y = nls.(g, ψ, ini=1.0+0.0im)
-    model = GPmodel(data_x, data_y)
+    ψ0 = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
+    ψ0 ./= norm(ψ0)
+    data_y = zeros(Complex{Float64}, c.NData)
+    model = GPmodel(data_x, data_y, ψ0)
 
     batch_x = Vector{State}(undef, c.NMC)
     for i in 1:c.NMC
@@ -29,7 +29,7 @@ function main(filename::String)
 
     for k in 1:c.iT
         model = imaginarytime(model)
-        ene, vene = energy(batch_x, model)
+        ene = energy(batch_x, model)
         β = 2.0 * k / c.NSpin / (c.l - ene)
         open("./data/" * filename, "a") do io
             write(io, string(k))

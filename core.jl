@@ -1,19 +1,19 @@
 include("./setup.jl")
 include("./model.jl")
 include("./hamiltonian.jl")
-include("./nlsolve.jl")
 using Base.Threads, LinearAlgebra, Random, Folds
 
 function imaginarytime(model::GPmodel)
-    data_x, data_y = model.data_x, model.data_y
+    data_x, data_y, ψ0 = model.data_x, model.data_y, model.ψ0
+    data_y .*= log.(ψ0)
     ψ = copy(data_y)
     @threads for i in 1:c.NData
         e = localenergy(data_x[i], data_y[i], model)
         ψ[i] = (c.l - e / c.NSpin) * exp(data_y[i])
     end
-    data_y = nls.(g, ψ, ini=1.0+0.0im)
-    data_y ./= norm(data_y)
-    GPmodel(data_x, data_y)
+    ψ ./= norm(ψ)
+    data_y = log.(ψ ./ ψ0)
+    GPmodel(data_x, data_y, ψ0)
 end
 
 function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
@@ -37,7 +37,6 @@ function localenergy(x::State, y::T, model::GPmodel) where {T<:Complex}
     eloc
 end
 
-
 function physicalvals(x::State, model::GPmodel)
     y = predict(x, model)
     eloc = 0.0im
@@ -45,7 +44,7 @@ function physicalvals(x::State, model::GPmodel)
         e = hamiltonian(i, x, y, model)
         eloc += e / c.NSpin
     end
-    [eloc, (c.l - eloc) * conj(c.l - eloc)]
+    eloc
 end
 
 function energy(x_mc::Vector{State}, model::GPmodel)
@@ -55,8 +54,6 @@ function energy(x_mc::Vector{State}, model::GPmodel)
             x_mc[i] = tryflip(x_mc[i], model, eng)
         end
     end
-    enesvec = Folds.sum(physicalvals(x, model) for x in x_mc)
-    ene  = enesvec[1]
-    vene = enesvec[2]
-    real(ene / c.NMC), real(vene / c.NMC)
+    ene = Folds.sum(physicalvals(x, model) for x in x_mc)
+    real(ene / c.NMC)
 end

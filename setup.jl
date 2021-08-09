@@ -26,8 +26,3 @@ function GP_Data()
     GP_Data(NSpin, NData, NMC, MCSkip, iT, H, t, J, l, A, B)
 end
 c = GP_Data()
-
-mutable struct Count{T<:Integer}
-    t::T
-end
-a = Count(0)
