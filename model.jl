@@ -9,19 +9,21 @@ function State(x::Vector{T}) where {T<:Real}
     State(x, shift)
 end
 
-mutable struct GPmodel{T<:Complex}
+mutable struct GPmodel{T<:Complex, S<:Real}
     data_x::Vector{State}
-    data_y::Vector{T}
-    ψ0::Vector{T}
-    pvec::Vector{T}
-    KI::Array{T}
+    data_ψ::Vector{T}
+    pvec_r::Vector{S}
+    pvec_θ::Vector{S}
+    KI::Array{S}
 end
-function GPmodel(data_x::Vector{State}, data_y::Vector{T}, ψ0::Vector{T}) where {T<:Complex}
-    KI = Array{T}(undef, c.NData, c.NData)
+function GPmodel(data_x::Vector{State}, data_ψ::Vector{T}) where {T<:Complex}
+    l = length(data_x)
+    KI = Array{Real{Float64}}(undef, l, l)
     makematrix(KI, data_x)
     makeinverse(KI)
-    pvec = KI * data_y
-    GPmodel(data_x, data_y, ψ0, pvec, KI)
+    pvec_r = KI * abs.(data_ψ)
+    pvec_θ = KI * angle.(data_ψ)
+    GPmodel(data_x, data_ψ, pvec_r, pvec_θ, KI)
 end
 
 function kernel(x1::State, x2::State)
@@ -39,7 +41,7 @@ function makematrix(K::Array{T}, data_x::Vector{State}) where{T<:Complex}
     end
 end 
 
-function makeinverse(KI::Array{T}) where {T<:Complex}
+function makeinverse(KI::Array{T}) where {T<:Real}
     KI[:, :] = inv(KI)
     # U, Δ, V = svd(KI)
     # invΔ = Diagonal(1.0 ./ Δ .* (Δ .> 1e-6))
@@ -47,15 +49,17 @@ function makeinverse(KI::Array{T}) where {T<:Complex}
 end
 
 function predict(x::State, model::GPmodel)
-    data_x, data_y, pvec, KI = model.data_x, model.data_y, model.pvec, model.KI
+    data_x, data_ψ, pvec_r, pvec_θ, KI = model.data_x, model.data_ψ, model.pvec_r, model.pvec_θ, model.KI
 
     # Compute mu var
     kv = map(x1 -> kernel(x1, x), data_x)
     k0 = kernel(x, x)
-    mu = kv' * pvec
+    mu_r = kv' * pvec_r
+    mu_θ = kv' * pvec_θ
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    sqrt(var) * randn(typeof(mu)) + mu + log(randn(typeof(mu)))
+    r = sqrt(var) * randn(typeof(mu)) + mu_r
+    θ = sqrt(var) * randn(typeof(mu)) + mu_θ
+    log(r) + im * θ
 end
-

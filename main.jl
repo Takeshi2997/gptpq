@@ -16,10 +16,9 @@ function main(filename::String)
     bimu = zeros(Float64, 2 * c.NData)
     biI  = Array(Diagonal(ones(Float64, 2 * c.NData)))
     biψ  = rand(MvNormal(bimu, biI))
-    ψ0 = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
-    ψ0 ./= norm(ψ0)
-    data_y = zeros(Complex{Float64}, c.NData)
-    model = GPmodel(data_x, data_y, ψ0)
+    data_ψ0 = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
+    data_ψ0 ./= norm(data_ψ0)
+    model = GPmodel(data_x, data_ψ0)
 
     batch_x = Vector{State}(undef, c.NMC)
     for i in 1:c.NMC
