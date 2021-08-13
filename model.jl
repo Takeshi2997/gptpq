@@ -47,7 +47,7 @@ function makeinverse(KI::Array{T}) where {T<:Complex}
 end
 
 function predict(x::State, model::GPmodel)
-    data_x, data_y, pvec_r, pvec_θ, KI = model.data_x, model.data_y, model.pvec, model.KI
+    data_x, data_y, pvec, KI = model.data_x, model.data_y, model.pvec, model.KI
 
     # Compute mu var
     kv = map(x1 -> kernel(x1, x), data_x)
