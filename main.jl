@@ -18,7 +18,8 @@ function main(filename::String)
     biψ  = rand(MvNormal(bimu, biI))
     data_ψ0 = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
     data_ψ0 ./= norm(data_ψ0)
-    model = GPmodel(data_x, data_ψ0)
+    data_y = log.(data_ψ0)
+    model = GPmodel(data_x, data_y)
 
     batch_x = Vector{State}(undef, c.NMC)
     for i in 1:c.NMC

@@ -4,13 +4,14 @@ include("./hamiltonian.jl")
 using Base.Threads, LinearAlgebra, Random, Folds
 
 function imaginarytime(model::GPmodel)
-    data_x, data_ψ = model.data_x, model.data_y
+    data_x, data_y = model.data_x, model.data_y
     @threads for i in 1:c.NData
-        e = localenergy(data_x[i], data_ψ[i], model)
-        data_ψ[i] *= (c.l - e / c.NSpin)
+        e = localenergy(data_x[i], data_y[i], model)
+        data_y[i] += log(c.l - e / c.NSpin)
     end
+    data_ψ = exp.(data_y)
     data_ψ ./= norm(data_ψ)
-    GPmodel(data_x, data_ψ)
+    GPmodel(data_x, log.(data_ψ))
 end
 
 function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
