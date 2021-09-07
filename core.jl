@@ -13,14 +13,14 @@ function imaginarytime(model::GPmodel)
         x = data_x[i]
         y = data_y[i]
         epsi = [localenergy_func(t0, x, model) for t0 in t]
-        data_y[i] = log(exp(y) * ψ0[i]^at0 - c.Δτ * dot(w, epsi)) - at1 * log(ψ0[i])
+        data_y[i] = log(exp(y) * ψ0[i]^at0 - c.Δτ / 2.0 * dot(w, epsi)) - at1 * log(ψ0[i])
     end
     data_y ./= norm(data_y)
     GPmodel(data_x, data_y, ψ0)
 end
 
 function localenergy_func(t::T, x::State, model::GPmodel) where {T<:Real}
-    τ = (t - 1.0) / 2.0
+    τ = (t + 1.0) / 2.0
     f = exp(-τ * c.Δτ)
     epsi = 0.0im
     @simd for i in 1:c.NSpin
