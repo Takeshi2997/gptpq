@@ -7,7 +7,7 @@ struct GP_Data{T<:Real, S<:Integer}
     H::T
     t::T
     J::T
-    l::T
+    Δτ::T
     A::T
     B::T
 end
@@ -20,9 +20,14 @@ function GP_Data()
     H = 2.0
     t = 1.0
     J = 1.0
-    l = 1.6
+    Δτ = 0.05
     A = 0.2
-    B = 1.0
-    GP_Data(NSpin, NData, NMC, MCSkip, iT, H, t, J, l, A, B)
+    B = 0.1
+    GP_Data(NSpin, NData, NMC, MCSkip, iT, H, t, J, Δτ, A, B)
 end
 c = GP_Data()
+
+mutable struct Count
+    t::Real
+end
+a = Count(1.0)

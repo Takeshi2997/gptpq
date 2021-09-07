@@ -1,17 +1,33 @@
 include("./setup.jl")
 include("./model.jl")
 include("./hamiltonian.jl")
-using Base.Threads, LinearAlgebra, Random, Folds
+using Base.Threads, LinearAlgebra, Random, Folds, FastGaussQuadrature
+
+const t, w = gausslegendre(11)
 
 function imaginarytime(model::GPmodel)
-    data_x, data_y = model.data_x, model.data_y
+    data_x, data_y, ψ0 = model.data_x, model.data_y, model.ψ0
+    at0 = a.t
+    at1 = at0 * exp(-1/c.NSpin)
     @threads for i in 1:c.NData
-        e = localenergy(data_x[i], data_y[i], model)
-        data_y[i] += log(c.l - e / c.NSpin)
+        x = data_x[i]
+        y = data_y[i]
+        epsi = [localenergy_func(t0, x, model) for t0 in t]
+        data_y[i] = log(exp(y) * ψ0[i]^at0 - c.Δτ * dot(w, epsi)) - at1 * log(ψ0[i])
     end
-    data_ψ = exp.(data_y)
-    data_ψ ./= norm(data_ψ)
-    GPmodel(data_x, log.(data_ψ))
+    data_y ./= norm(data_y)
+    GPmodel(data_x, data_y, ψ0)
+end
+
+function localenergy_func(t::T, x::State, model::GPmodel) where {T<:Real}
+    τ = (t - 1.0) / 2.0
+    f = exp(-τ * c.Δτ)
+    epsi = 0.0im
+    @simd for i in 1:c.NSpin
+        ep = hamiltonian_psi(i, x, f, model)
+        epsi += ep
+    end
+    epsi
 end
 
 function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
@@ -24,15 +40,6 @@ function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
     prob = exp(2 * real(y_new - y))
     x.spin[pos] *= ifelse(rand(eng) < prob, -1, 1)
     State(x.spin)
-end
-
-function localenergy(x::State, y::T, model::GPmodel) where {T<:Complex}
-    eloc = 0.0im
-    @simd for i in 1:c.NSpin
-        e = hamiltonian(i, x, y, model)
-        eloc += e
-    end
-    eloc
 end
 
 function physicalvals(x::State, model::GPmodel)

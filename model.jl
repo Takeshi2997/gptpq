@@ -12,16 +12,16 @@ end
 mutable struct GPmodel{T<:Complex}
     data_x::Vector{State}
     data_y::Vector{T}
+    ψ0::Vector{T}
     pvec::Vector{T}
     KI::Array{T}
 end
-function GPmodel(data_x::Vector{State}, data_y::Vector{T}) where {T<:Complex}
-    l = length(data_x)
-    KI = Array{T}(undef, l, l)
+function GPmodel(data_x::Vector{State}, data_y::Vector{T}, ψ0::Vector{T}) where {T<:Complex}
+    KI = Array{T}(undef, c.NData, c.NData)
     makematrix(KI, data_x)
     makeinverse(KI)
-    pvec = KI * exp.(data_y)
-    GPmodel(data_x, data_y, pvec, KI)
+    pvec = KI * data_y
+    GPmodel(data_x, data_y, ψ0, pvec, KI)
 end
 
 function kernel(x1::State, x2::State)
@@ -40,10 +40,10 @@ function makematrix(K::Array{T}, data_x::Vector{State}) where{T<:Complex}
 end 
 
 function makeinverse(KI::Array{T}) where {T<:Complex}
-    KI[:, :] = inv(KI)
-    # U, Δ, V = svd(KI)
-    # invΔ = Diagonal(1.0 ./ Δ .* (Δ .> 1e-6))
-    # KI[:, :] = V * invΔ * U'
+    # KI[:, :] = inv(KI)
+    U, Δ, V = svd(KI)
+    invΔ = Diagonal(1.0 ./ Δ .* (Δ .> 1e-6))
+    KI[:, :] = V * invΔ * U'
 end
 
 function predict(x::State, model::GPmodel)
@@ -56,5 +56,19 @@ function predict(x::State, model::GPmodel)
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    log(sqrt(var) * randn(typeof(mu)) + mu)
+    sqrt(var) * randn(typeof(mu)) + mu + a.t * log(randn(typeof(mu)))
 end
+
+function predict_f(x::State, f::T, model::GPmodel) where {T<:Real}
+    data_x, data_y, pvec, KI = model.data_x, model.data_y, model.pvec, model.KI
+
+    # Compute mu var
+    kv = map(x1 -> kernel(x1, x), data_x)
+    k0 = kernel(x, x)
+    mu = kv' * pvec
+    var = k0 - kv' * KI * kv
+
+    # sample from gaussian
+    sqrt(var) * randn(typeof(mu)) + mu + a.t * f * log(randn(typeof(mu)))
+end
+
