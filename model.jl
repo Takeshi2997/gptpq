@@ -56,5 +56,5 @@ function predict(x::State, model::GPmodel)
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    sqrt(var) * randn(typeof(mu)) + mu
+    log(sqrt(var) * randn(typeof(mu)) + mu)
 end
