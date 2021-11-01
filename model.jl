@@ -22,7 +22,7 @@ mutable struct GPmodel{T<:Complex, S<:Real}
     pvec::Vector{T}
     KI::Array{T}
 end
-function GPmodel(data_x::Vector{S}, data_ψ::Vector{T}, ρ::SparseMatrixCSC{T, Int64}) where {T<:Complex, S<:Real}
+function GPmodel(data_x::Vector{Vector{S}}, data_ψ::Vector{T}, ρ::SparseMatrixCSC{T, Int64}) where {T<:Complex, S<:Real}
     KI = Array{T}(undef, c.NData, c.NData)
     makematrix(KI, ρ, data_x)
     makeinverse(KI)

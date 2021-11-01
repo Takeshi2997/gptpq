@@ -63,9 +63,10 @@ end
 
 function setmatrix()
     T = ComplexF64
-    h::SparseMatrixCSC{T} = SparseMatrixCSC(hamiltonian(c.NSpin))
-    I::SparseMatrixCSC{T} = SparseMatrixCSC(⊗(fill(S⁰, c.NSpin)...))
-    A::SparseMatrixCSC{T} = SparseMatrixCSC(c.l * I - h)
+    S = Int64
+    h::SparseMatrixCSC{T, S} = SparseMatrixCSC(hamiltonian(c.NSpin))
+    I::SparseMatrixCSC{T, S} = SparseMatrixCSC(⊗(fill(S⁰, c.NSpin)...))
+    A::SparseMatrixCSC{T, S} = SparseMatrixCSC(c.l * I - h)
     h, I, A
 end
 
