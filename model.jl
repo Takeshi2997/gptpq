@@ -1,4 +1,5 @@
 include("./setup.jl")
+using SparseArrays
 
 function tovector(x::Vector{T}) where {T<:Real}
     out = 1
@@ -17,18 +18,18 @@ end
 mutable struct GPmodel{T<:Complex, S<:Real}
     data_x::Vector{S}
     data_ψ::Vector{T}
-    ρ::Array{T}
+    ρ::SparseMatrixCSC{T}
     pvec::Vector{T}
     KI::Array{T}
 end
-function GPmodel(data_x::Vector{S}, data_ψ::Vector{T}, ρ::Array{T}) where {T<:Complex, S<:Real}
+function GPmodel(data_x::Vector{S}, data_ψ::Vector{T}, ρ::SparseMatrixCSC{T}) where {T<:Complex, S<:Real}
     KI = Array{T}(undef, c.NData, c.NData)
     makematrix(KI, ρ, data_x)
     makeinverse(KI)
     pvec = KI * data_ψ
     GPmodel(data_x, data_ψ, ρ, pvec, KI)
 end
-function GPmodel(ρ::Array{T}) where {T<:Complex}
+function GPmodel(ρ::SparseMatrixCSC{T}) where {T<:Complex}
     data_x, data_ψ = model.data_x, model.data_ψ
     GPmodel(data_x, data_ψ, ρ)
 end
