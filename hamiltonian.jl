@@ -12,7 +12,7 @@ function hamiltonian_heisenberg(i::Integer, x::Vector{S}, y::T, model::GPmodel) 
     -c.J * (1.0 + (2.0 * exp(yflip - y) - 3.0) * (x.spin[i] * x.spin[i%c.NSpin+1] < 0)) / 4.0
 end
 
-function hamiltonian_psi(i::Integer, x::State, model::GPmodel) where {T<:Real}
+function hamiltonian_psi(i::Integer, x::Vector{S}, model::GPmodel) where {T<:Real, S<:Real}
     hamiltonian_heisenberg_psi(i, x, model)
 end
 
