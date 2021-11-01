@@ -9,17 +9,14 @@ function main(filename::String)
         EngArray[i] = MersenneTwister(i)
     end
     eng = EngArray[1]
-    data_x = Vector{Float64}(undef, c.NData)
-    for i in 1:c.NData
-        data_x[i] = rand([1.0, -1.0], c.NSpin)
-    end
+    data_x = [rand(eng, [1.0, -1.0], c.NSpin)  for i in 1:c.NData]
     bimu = zeros(Float64, 2 * c.NData)
     biI  = Array(Diagonal(ones(Float64, 2 * c.NData)))
     biψ  = rand(MvNormal(bimu, biI))
     data_ψ = biψ[1:c.NData] .+ im * biψ[c.NData+1:end]
     model = GPmodel(data_x, data_ψ, I)
 
-    batch_x = [rand(eng, [1.0, -1.0], c.NSpin)  for i in 1:NMC]
+    batch_x = [rand(eng, [1.0, -1.0], c.NSpin)  for i in 1:c.NMC]
 
     ene = 0.0
     for k in 0:c.iT
