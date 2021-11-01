@@ -3,31 +3,22 @@ struct GP_Data{T<:Real, S<:Integer}
     NData::S
     NMC::S
     MCSkip::S
-    iT::S
+    T::S
     H::T
     t::T
     J::T
-    Δτ::T
-    A::T
-    B::T
+    l::T
 end
 function GP_Data()
-    NSpin = 80
+    NSpin = 8
     NData = 64
     NMC = 1024
     MCSkip = 16
-    iT = 100
+    T = 100
     H = 2.0
     t = 1.0
     J = 1.0
-    Δτ = 0.05
-    A = 0.2
-    B = 0.1
-    GP_Data(NSpin, NData, NMC, MCSkip, iT, H, t, J, Δτ, A, B)
+    l = 0.05
+    GP_Data(NSpin, NData, NMC, MCSkip, T, H, t, J, l)
 end
 c = GP_Data()
-
-mutable struct Count
-    t::Real
-end
-a = Count(1.0)

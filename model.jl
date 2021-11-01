@@ -1,39 +1,48 @@
 include("./setup.jl")
 
-mutable struct State{T<:Real}
-    spin::Vector{T}
-    shift::Vector{Vector{T}}
-end
-function State(x::Vector{T}) where {T<:Real}
-    shift = [circshift(x, s) for s in 1:c.NSpin]
-    State(x, shift)
+function tovector(x::Vector{T}) where {T<:Real}
+    out = 1
+    n = 0
+    for x0 in x
+        if x0 > 0.0
+            out += 2^n
+        end
+        n += 1
+    end
+    ξ = zeros(T, 2^c.NSpin)
+    ξ[out] += 1.0
+    ξ
 end
 
-mutable struct GPmodel{T<:Complex}
-    data_x::Vector{State}
-    data_y::Vector{T}
-    ψ0::Vector{T}
+mutable struct GPmodel{T<:Complex, S<:Real}
+    data_x::Vector{S}
+    data_ψ::Vector{T}
+    ρ::Array{T}
     pvec::Vector{T}
     KI::Array{T}
 end
-function GPmodel(data_x::Vector{State}, data_y::Vector{T}, ψ0::Vector{T}) where {T<:Complex}
+function GPmodel(data_x::Vector{S}, data_ψ::Vector{T}, ρ::Array{T}) where {T<:Complex, S<:Real}
     KI = Array{T}(undef, c.NData, c.NData)
-    makematrix(KI, data_x)
+    makematrix(KI, ρ, data_x)
     makeinverse(KI)
-    pvec = KI * data_y
-    GPmodel(data_x, data_y, ψ0, pvec, KI)
+    pvec = KI * data_ψ
+    GPmodel(data_x, data_ψ, ρ, pvec, KI)
+end
+function GPmodel(ρ::Array{T}) where {T<:Complex}
+    data_x, data_ψ = model.data_x, model.data_ψ
+    GPmodel(data_x, data_ψ, ρ)
 end
 
-function kernel(x1::State, x2::State)
-    v = [norm(x1.shift[n] - x2.spin)^2 for n in 1:length(x1.spin)]
-    v ./= c.NSpin
-    c.B * sum(exp.(-v ./ c.A))
+function kernel(ρ::Array{T}, x1::Vector{S}, x2::Vector{S})  where {T<:Complex, S<:Real}
+    ξ1 = tovector(x1)
+    ξ2 = tovector(x2)
+    dot(ξ1, ρ * ξ2)
 end
 
-function makematrix(K::Array{T}, data_x::Vector{State}) where{T<:Complex}
+function makematrix(K::Array{T}, ρ::Array{T}, data_x::Vector{S}) where {T<:Complex, S<:Real}
     for i in 1:length(data_x)
         for j in i:length(data_x)
-            K[i, j] = kernel(data_x[i], data_x[j])
+            K[i, j] = kernel(ρ, data_x[i], data_x[j])
             K[j, i] = K[i, j]
         end
     end
@@ -47,28 +56,14 @@ function makeinverse(KI::Array{T}) where {T<:Complex}
 end
 
 function predict(x::State, model::GPmodel)
-    data_x, data_y, pvec, KI = model.data_x, model.data_y, model.pvec, model.KI
+    data_x, ρ, data_ψ, pvec, KI = model.data_x, model.ρ, model.data_ψ, model.pvec, model.KI
 
     # Compute mu var
-    kv = map(x1 -> kernel(x1, x), data_x)
-    k0 = kernel(x, x)
+    kv = map(x1 -> kernel(ρ, x, x1), data_x)
+    k0 = kernel(ρ, x, x)
     mu = kv' * pvec
     var = k0 - kv' * KI * kv
 
     # sample from gaussian
-    sqrt(var) * randn(typeof(mu)) + mu + a.t * log(randn(typeof(mu)))
+    log(sqrt(var) * randn(typeof(mu)) + mu)
 end
-
-function predict_f(x::State, f::T, model::GPmodel) where {T<:Real}
-    data_x, data_y, pvec, KI = model.data_x, model.data_y, model.pvec, model.KI
-
-    # Compute mu var
-    kv = map(x1 -> kernel(x1, x), data_x)
-    k0 = kernel(x, x)
-    mu = kv' * pvec
-    var = k0 - kv' * KI * kv
-
-    # sample from gaussian
-    sqrt(var) * randn(typeof(mu)) + mu + a.t * f * log(randn(typeof(mu)))
-end
-

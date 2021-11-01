@@ -1,30 +1,32 @@
 include("./setup.jl")
 include("./model.jl")
 include("./hamiltonian.jl")
-using Base.Threads, LinearAlgebra, Random, Folds, FastGaussQuadrature
+using Base.Threads, LinearAlgebra, Random, Folds
 
-const t, w = gausslegendre(11)
-
-function imaginarytime(model::GPmodel)
-    data_x, data_y, ψ0 = model.data_x, model.data_y, model.ψ0
-    at0 = a.t
-    at1 = at0 * exp(-1/c.NSpin)
-    @threads for i in 1:c.NData
-        x = data_x[i]
-        y = data_y[i]
-        epsi = [localenergy_func(t0, x, model) for t0 in t]
-        data_y[i] = log(exp(y) * ψ0[i]^at0 - c.Δτ / 2.0 * dot(w, epsi)) - at1 * log(ψ0[i])
-    end
-    data_y ./= norm(data_y)
-    GPmodel(data_x, data_y, ψ0)
+function update(model::GPmodel)
+    ρ = model.ρ
+    ρ1 = A * (A * ρ)'
+    ρ1  = ρ1 ./ tr(ρ1)
+    GPmodel(ρ1)
 end
 
-function localenergy_func(t::T, x::State, model::GPmodel) where {T<:Real}
-    τ = (t + 1.0) / 2.0
-    f = exp(-τ * c.Δτ)
+function imaginarytime(model::GPmodel)
+    model = update(model)
+    data_x, data_ψ, ρ = model.data_x, model.data_y, model.ρ
+    @threads for i in 1:c.NData
+        x = data_x[i]
+        ψ = data_ψ[i]
+        epsi = localenergy_psi(x, model)
+        data_ψ[i] = (c.l * ψ - epsi)
+    end
+    data_ψ ./= sum(data_ψ) / c.NData
+    GPmodel(data_x, data_y, ρ)
+end
+
+function localenergy_func(x::Vector{T}, model::GPmodel) where {T<:Real}
     epsi = 0.0im
     @simd for i in 1:c.NSpin
-        ep = hamiltonian_psi(i, x, f, model)
+        ep = hamiltonian_psi(i, x, model)
         epsi += ep
     end
     epsi
