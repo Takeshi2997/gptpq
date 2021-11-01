@@ -34,13 +34,13 @@ function GPmodel(ρ::SparseMatrixCSC{T}) where {T<:Complex}
     GPmodel(data_x, data_ψ, ρ)
 end
 
-function kernel(ρ::Array{T}, x1::Vector{S}, x2::Vector{S})  where {T<:Complex, S<:Real}
+function kernel(ρ::SparseMatrixCSC{T}, x1::Vector{S}, x2::Vector{S})  where {T<:Complex, S<:Real}
     ξ1 = tovector(x1)
     ξ2 = tovector(x2)
     dot(ξ1, ρ * ξ2)
 end
 
-function makematrix(K::Array{T}, ρ::Array{T}, data_x::Vector{S}) where {T<:Complex, S<:Real}
+function makematrix(K::Array{T}, ρ::SparseMatrixCSC{T}, data_x::Vector{S}) where {T<:Complex, S<:Real}
     for i in 1:length(data_x)
         for j in i:length(data_x)
             K[i, j] = kernel(ρ, data_x[i], data_x[j])
