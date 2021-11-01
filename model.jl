@@ -16,7 +16,7 @@ function tovector(x::Vector{T}) where {T<:Real}
 end
 
 mutable struct GPmodel{T<:Complex, S<:Real}
-    data_x::Vector{S}
+    data_x::Vector{Vector{S}}
     data_ψ::Vector{T}
     ρ::SparseMatrixCSC{T, Int64}
     pvec::Vector{T}
