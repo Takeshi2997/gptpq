@@ -7,7 +7,7 @@ function update(model::GPmodel)
     ρ = model.ρ
     ρ1 = A * (A * ρ)'
     ρ1  = ρ1 ./ tr(ρ1)
-    GPmodel(ρ1)
+    GPmodel(model, ρ1)
 end
 
 function imaginarytime(model::GPmodel)

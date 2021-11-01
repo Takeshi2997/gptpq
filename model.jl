@@ -18,29 +18,29 @@ end
 mutable struct GPmodel{T<:Complex, S<:Real}
     data_x::Vector{S}
     data_ψ::Vector{T}
-    ρ::SparseMatrixCSC{T}
+    ρ::SparseMatrixCSC{T, Integer}
     pvec::Vector{T}
     KI::Array{T}
 end
-function GPmodel(data_x::Vector{S}, data_ψ::Vector{T}, ρ::SparseMatrixCSC{T}) where {T<:Complex, S<:Real}
+function GPmodel(data_x::Vector{S}, data_ψ::Vector{T}, ρ::SparseMatrixCSC{T, Integer}) where {T<:Complex, S<:Real}
     KI = Array{T}(undef, c.NData, c.NData)
     makematrix(KI, ρ, data_x)
     makeinverse(KI)
     pvec = KI * data_ψ
     GPmodel(data_x, data_ψ, ρ, pvec, KI)
 end
-function GPmodel(ρ::SparseMatrixCSC{T}) where {T<:Complex}
+function GPmodel(model::GPmodel, ρ::SparseMatrixCSC{T, Integer}) where {T<:Complex}
     data_x, data_ψ = model.data_x, model.data_ψ
     GPmodel(data_x, data_ψ, ρ)
 end
 
-function kernel(ρ::SparseMatrixCSC{T}, x1::Vector{S}, x2::Vector{S})  where {T<:Complex, S<:Real}
+function kernel(ρ::SparseMatrixCSC{T, Integer}, x1::Vector{S}, x2::Vector{S})  where {T<:Complex, S<:Real}
     ξ1 = tovector(x1)
     ξ2 = tovector(x2)
     dot(ξ1, ρ * ξ2)
 end
 
-function makematrix(K::Array{T}, ρ::SparseMatrixCSC{T}, data_x::Vector{S}) where {T<:Complex, S<:Real}
+function makematrix(K::Array{T}, ρ::SparseMatrixCSC{T, Integer}, data_x::Vector{S}) where {T<:Complex, S<:Real}
     for i in 1:length(data_x)
         for j in i:length(data_x)
             K[i, j] = kernel(ρ, data_x[i], data_x[j])
