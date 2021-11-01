@@ -55,7 +55,7 @@ function makeinverse(KI::Array{T}) where {T<:Complex}
     KI[:, :] = V * invΔ * U'
 end
 
-function predict(x::State, model::GPmodel)
+function predict(x::Vector{T}, model::GPmodel) where {T<:Real}
     data_x, ρ, data_ψ, pvec, KI = model.data_x, model.ρ, model.data_ψ, model.pvec, model.KI
 
     # Compute mu var

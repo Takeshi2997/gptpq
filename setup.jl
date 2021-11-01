@@ -18,7 +18,7 @@ function GP_Data()
     H = 2.0
     t = 1.0
     J = 1.0
-    l = 0.05
+    l = 5.0
     GP_Data(NSpin, NData, NMC, MCSkip, T, H, t, J, l)
 end
 c = GP_Data()
