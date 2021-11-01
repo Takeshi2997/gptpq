@@ -32,7 +32,7 @@ function localenergy_func(x::Vector{T}, model::GPmodel) where {T<:Real}
     epsi
 end
 
-function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
+function tryflip(x::Vector{T}, model::GPmodel, eng::MersenneTwister) where {T<:Real}
     pos = rand(eng, collect(1:c.NSpin))
     y = predict(x, model)
     xflip_spin = copy(x.spin)
@@ -44,7 +44,7 @@ function tryflip(x::State, model::GPmodel, eng::MersenneTwister)
     State(x.spin)
 end
 
-function physicalvals(x::State, model::GPmodel)
+function physicalvals(x::Vector{T}, model::GPmodel) where {T<:Real}
     y = predict(x, model)
     eloc = 0.0im
     @simd for i in 1:c.NSpin
@@ -54,7 +54,7 @@ function physicalvals(x::State, model::GPmodel)
     eloc
 end
 
-function energy(x_mc::Vector{State}, model::GPmodel)
+function energy(x_mc::Vector{Vector{T}}, model::GPmodel) where {T<:Real}
     @threads for i in 1:c.NMC
         @simd for j in 1:c.MCSkip
             eng = EngArray[threadid()]
