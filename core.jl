@@ -20,7 +20,7 @@ function imaginarytime(model::GPmodel)
         data_ψ[i] = (c.l * ψ - epsi)
     end
     data_ψ ./= sum(data_ψ) / c.NData
-    GPmodel(data_x, data_y, ρ)
+    GPmodel(data_x, data_ψ, ρ)
 end
 
 function localenergy_psi(x::Vector{T}, model::GPmodel) where {T<:Real}
@@ -35,13 +35,12 @@ end
 function tryflip(x::Vector{T}, model::GPmodel, eng::MersenneTwister) where {T<:Real}
     pos = rand(eng, collect(1:c.NSpin))
     y = predict(x, model)
-    xflip_spin = copy(x.spin)
-    xflip_spin[pos] *= -1
-    xflip = State(xflip_spin)
+    xflip = copy(x)
+    xflip[pos] *= -1
     y_new = predict(xflip, model)
     prob = exp(2 * real(y_new - y))
-    x.spin[pos] *= ifelse(rand(eng) < prob, -1, 1)
-    State(x.spin)
+    x[pos] *= ifelse(rand(eng) < prob, -1, 1)
+    Sx
 end
 
 function physicalvals(x::Vector{T}, model::GPmodel) where {T<:Real}
