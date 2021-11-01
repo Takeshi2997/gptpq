@@ -12,7 +12,7 @@ end
 
 function imaginarytime(model::GPmodel)
     model = update(model)
-    data_x, data_ψ, ρ = model.data_x, model.data_y, model.ρ
+    data_x, data_ψ, ρ = model.data_x, model.data_ψ, model.ρ
     @threads for i in 1:c.NData
         x = data_x[i]
         ψ = data_ψ[i]
@@ -23,7 +23,7 @@ function imaginarytime(model::GPmodel)
     GPmodel(data_x, data_y, ρ)
 end
 
-function localenergy_func(x::Vector{T}, model::GPmodel) where {T<:Real}
+function localenergy_psi(x::Vector{T}, model::GPmodel) where {T<:Real}
     epsi = 0.0im
     @simd for i in 1:c.NSpin
         ep = hamiltonian_psi(i, x, model)

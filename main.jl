@@ -19,7 +19,7 @@ function main(filename::String)
     batch_x = [rand(eng, [1.0, -1.0], c.NSpin)  for i in 1:c.NMC]
 
     ene = 0.0
-    for k in 0:c.iT
+    for k in 0:c.T
         model = imaginarytime(model)
         ene = energy(batch_x, model)
         open("./data/" * filename, "a") do io
