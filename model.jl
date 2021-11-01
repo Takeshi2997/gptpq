@@ -40,7 +40,7 @@ function kernel(ρ::SparseMatrixCSC{T, Int64}, x1::Vector{S}, x2::Vector{S})  wh
     dot(ξ1, ρ * ξ2)
 end
 
-function makematrix(K::Array{T}, ρ::SparseMatrixCSC{T, Int64}, data_x::Vector{S}) where {T<:Complex, S<:Real}
+function makematrix(K::Array{T}, ρ::SparseMatrixCSC{T, Int64}, data_x::Vector{Vector{S}}) where {T<:Complex, S<:Real}
     for i in 1:length(data_x)
         for j in i:length(data_x)
             K[i, j] = kernel(ρ, data_x[i], data_x[j])
